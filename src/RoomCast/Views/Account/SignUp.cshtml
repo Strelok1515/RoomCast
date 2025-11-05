@@ -13,7 +13,9 @@
     <form asp-action="SignUp" method="post" novalidate class="mt-6 space-y-5">
         @Html.AntiForgeryToken()
 
-        <div asp-validation-summary="ModelOnly" class="validation-summary rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm" role="alert"></div>
+        <div asp-validation-summary="ModelOnly"
+             class="validation-summary rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm"
+             role="alert"></div>
 
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="space-y-2">
@@ -23,6 +25,7 @@
                        autocomplete="given-name" />
                 <span asp-validation-for="FirstName" class="text-sm text-red-600"></span>
             </div>
+
             <div class="space-y-2">
                 <label asp-for="LastName" class="text-sm font-semibold text-slate-700"></label>
                 <input asp-for="LastName"
@@ -43,15 +46,16 @@
         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div class="space-y-2">
                 <label asp-for="Password" class="text-sm font-semibold text-slate-700"></label>
-                <input asp-for="Password"
+                <input asp-for="Password" type="password"
                        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                        autocomplete="new-password" />
                 <div class="text-xs text-slate-500">Use at least 8 characters, mixing letters and numbers.</div>
                 <span asp-validation-for="Password" class="text-sm text-red-600"></span>
             </div>
+
             <div class="space-y-2">
                 <label asp-for="ConfirmPassword" class="text-sm font-semibold text-slate-700"></label>
-                <input asp-for="ConfirmPassword"
+                <input asp-for="ConfirmPassword" type="password"
                        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                        autocomplete="new-password" />
                 <span asp-validation-for="ConfirmPassword" class="text-sm text-red-600"></span>

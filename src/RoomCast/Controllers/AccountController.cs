@@ -15,34 +15,41 @@ namespace RoomCast.Controllers
         private readonly SignInManager<ApplicationUser> _signInManager;
         private readonly AuthenticationOptions _authOptions;
 
-        public AccountController(UserManager<ApplicationUser> userManager,
-                                 SignInManager<ApplicationUser> signInManager,
-                                 IOptions<AuthenticationOptions> authOptions)
+        public AccountController(
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
+            IOptions<AuthenticationOptions> authOptions)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _authOptions = authOptions.Value;
         }
 
+        // ======================
+        // SIGN UP (GET)
+        // ======================
         [HttpGet]
         public IActionResult SignUp()
         {
             if (_signInManager.IsSignedIn(User))
-            {
                 return RedirectToAction("Index", "Home");
-            }
 
             return View(new SignUpViewModel());
         }
 
+        // ======================
+        // SIGN UP (POST)
+        // ======================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SignUp(SignUpViewModel model)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
-            var trimmedFirstName = model.FirstName.Trim();
-            var trimmedLastName = model.LastName.Trim();
+            var trimmedFirstName = model.FirstName?.Trim() ?? string.Empty;
+            var trimmedLastName = model.LastName?.Trim() ?? string.Empty;
+
             var user = new ApplicationUser
             {
                 UserName = model.Email,
@@ -56,73 +63,81 @@ namespace RoomCast.Controllers
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
-                if (_authOptions.AutoLoginAfterRegistration)
-                {
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("Index", "Home");
-                }
-
-                TempData["RegisterSuccess"] = true;
-                return RedirectToAction(nameof(Login));
+                // ✅ Always redirect to login page after registration
+                TempData["RegistrationSuccess"] = "Account created successfully. Please login.";
+                return RedirectToAction("Login", "Account");
             }
 
-            foreach (var e in result.Errors) ModelState.AddModelError("", e.Description);
+            foreach (var error in result.Errors)
+                ModelState.AddModelError(string.Empty, error.Description);
+
             return View(model);
         }
 
+        // ======================
+        // LOGIN (GET)
+        // ======================
         [HttpGet]
         public IActionResult Login(string? returnUrl = null)
         {
             if (_signInManager.IsSignedIn(User))
             {
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                {
                     return Redirect(returnUrl);
-                }
 
                 return RedirectToAction("Index", "Home");
             }
 
             ViewData["ReturnUrl"] = returnUrl;
-            if (TempData.ContainsKey("RegisterSuccess"))
-            {
-                ViewBag.RegistrationSucceeded = true;
-            }
+
+            if (TempData.ContainsKey("RegistrationSuccess"))
+                ViewBag.RegistrationSucceeded = TempData["RegistrationSuccess"];
 
             return View();
         }
 
+        // ======================
+        // LOGIN (POST)
+        // ======================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+                return View(model);
 
             var result = await _signInManager.PasswordSignInAsync(
-                model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+                model.Email,
+                model.Password,
+                model.RememberMe,
+                lockoutOnFailure: true
+            );
 
             if (result.Succeeded)
             {
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                {
                     return Redirect(returnUrl);
-                }
 
                 return RedirectToAction("Index", "Home");
             }
 
-            if (result.IsLockedOut) ModelState.AddModelError("", "Account locked. Try later.");
-            else ModelState.AddModelError("", "Invalid login attempt.");
+            if (result.IsLockedOut)
+                ModelState.AddModelError("", "Account locked. Please try again later.");
+            else
+                ModelState.AddModelError("", "Invalid login attempt. Please try again.");
 
             return View(model);
         }
 
+        // ======================
+        // LOGOUT
+        // ======================
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
-            return RedirectToAction("Login");
+            return RedirectToAction("Login", "Account");
         }
     }
 }

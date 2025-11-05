@@ -1,56 +1,119 @@
 ﻿@model IEnumerable<RoomCast.Models.Album>
+
 @{
     ViewData["Title"] = "My Albums";
 }
 
-<div class="flex flex-col gap-4 mb-8">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold text-slate-800">My Albums</h2>
-        <a asp-action="Create"
-           class="inline-block px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-emerald-500">
-            Create Album
-        </a>
-    </div>
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-semibold text-slate-800">My Albums</h1>
+    <a asp-action="Create"
+       class="rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500">
+        Create Album
+    </a>
+</div>
 
-    <!-- Search Bar -->
-    <form method="get" class="flex items-center gap-2 w-full sm:w-1/3 mb-4">
-        <input type="text"
-               name="searchString"
-               value="@ViewData["SearchString"]"
-               placeholder="Search by name"
-               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+<div class="mb-6 flex items-center gap-2">
+    <form asp-action="Index" method="get" class="flex items-center gap-2">
+        <input name="searchString" value="@ViewData["SearchString"]"
+               placeholder="Search albums..."
+               class="w-full max-w-xs rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" />
         <button type="submit"
-                class="px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-500">
+                class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
             Search
         </button>
     </form>
 </div>
 
+@if (!Model.Any())
+{
+    <div class="rounded-lg bg-white p-8 text-center text-slate-500 shadow-sm ring-1 ring-slate-200">
+        No albums found. Click "Create Album" to start organizing your media.
+    </div>
+}
+else
+{
+    <div class="overflow-hidden rounded-lg bg-white shadow-sm ring-1 ring-slate-200">
+        <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-slate-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600">Thumbnail</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600">Album Name</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600">Created</th>
+                    <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 bg-white">
+                @foreach (var album in Model)
+                {
+                    var firstMedia = album.AlbumFiles?.FirstOrDefault()?.MediaFile;
+                    var isVideo = string.Equals(firstMedia?.FileType, "Video", StringComparison.OrdinalIgnoreCase);
 
+                    // Prefer generated thumbnail (for videos or images)
+                    var thumbPath = firstMedia?.ThumbnailPath;
+                    if (string.IsNullOrEmpty(thumbPath))
+                        thumbPath = firstMedia?.FilePath;
 
+                    if (string.IsNullOrEmpty(thumbPath))
+                        thumbPath = Url.Content("~/images/placeholder-thumb.png");
+                    else
+                        thumbPath = Url.Content(thumbPath.StartsWith("~") ? thumbPath : $"~/{thumbPath.TrimStart('/')}");
 
-<table class="min-w-full bg-white border border-slate-200 rounded-md shadow">
-    <thead class="bg-slate-100 text-slate-700">
-        <tr>
-            <th class="px-4 py-2 text-left">Album Name</th>
-            <th class="px-4 py-2 text-left">Created</th>
-            <th class="px-4 py-2 text-left">Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var album in Model)
-        {
-            <tr class="border-t border-slate-200 hover:bg-slate-50">
-                <td class="px-4 py-2">@album.AlbumName</td>
-                <td class="px-4 py-2">@album.Timestamp.ToLocalTime().ToString("g")</td>
-                <td class="px-4 py-2 space-x-2">
-                    <a asp-action="Details" asp-route-id="@album.AlbumId" class="text-indigo-600 hover:underline">View</a> |
-                    <a asp-action="Edit" asp-route-id="@album.AlbumId" class="text-blue-600 hover:underline">Edit</a> |
-                    <a asp-action="Delete" asp-route-id="@album.AlbumId" class="text-red-600 hover:underline">Delete</a> |
-                    <a asp-action="AddMedia" asp-route-id="@album.AlbumId" class="text-emerald-600 hover:underline">Add Media</a> |
-                    <a asp-action="AssignToScreen" asp-route-id="@album.AlbumId" class="text-slate-700 hover:underline">Assign to Screen</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-6 py-3">
+                            <div class="relative inline-block rounded-md overflow-hidden border border-slate-200 shadow-sm">
+                                <img src="@thumbPath"
+                                     alt="Thumbnail"
+                                     class="h-24 w-36 object-cover" />
+
+                                @if (isVideo)
+                                {
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/40">
+                                        <i class="bi bi-play-circle-fill text-white text-3xl drop-shadow"></i>
+                                    </div>
+                                }
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-3 text-sm font-medium text-slate-800">@album.AlbumName</td>
+                        <td class="px-6 py-3 text-sm text-slate-500">@album.Timestamp.ToLocalTime().ToString("g")</td>
+                        <td class="px-6 py-3 text-sm">
+                            <div class="flex flex-wrap gap-2">
+                                <a asp-action="Details" asp-route-id="@album.AlbumId"
+                                   class="rounded-md border border-indigo-300 px-3 py-1 text-indigo-600 transition hover:bg-indigo-50">
+                                    View
+                                </a>
+
+                                <a asp-action="Edit" asp-route-id="@album.AlbumId"
+                                   class="rounded-md border border-sky-300 px-3 py-1 text-sky-600 transition hover:bg-sky-50">
+                                    Edit
+                                </a>
+
+                                <a asp-action="Delete" asp-route-id="@album.AlbumId"
+                                   class="rounded-md border border-rose-300 px-3 py-1 text-rose-600 transition hover:bg-rose-50">
+                                    Delete
+                                </a>
+
+                                <a asp-controller="Albums" asp-action="AddMedia" asp-route-albumId="@album.AlbumId"
+                                   class="rounded-md border border-emerald-300 px-3 py-1 text-emerald-600 transition hover:bg-emerald-50">
+                                    Add Media
+                                </a>
+
+                                <a asp-controller="Albums" asp-action="AssignToScreen" asp-route-albumId="@album.AlbumId"
+                                   class="rounded-md border border-amber-300 px-3 py-1 text-amber-600 transition hover:bg-amber-50">
+                                    Assign
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<style>
+    .drop-shadow {
+        filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
+    }
+</style>
+

@@ -31,6 +31,7 @@ namespace RoomCast.Controllers
             var query = _context.Albums
                 .Where(a => a.UserId == user.Id)
                 .Include(a => a.AlbumFiles)
+                .ThenInclude(af => af.MediaFile)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchString))
@@ -67,11 +68,11 @@ namespace RoomCast.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ Add Media (GET)
+        // ✅ Add Media (GET) — Fixed route parameter (albumId)
         [HttpGet]
-        public async Task<IActionResult> AddMedia(int id)
+        public async Task<IActionResult> AddMedia(int albumId)
         {
-            var album = await _context.Albums.FindAsync(id);
+            var album = await _context.Albums.FindAsync(albumId);
             if (album == null) return NotFound();
 
             var userId = _userManager.GetUserId(User);
@@ -102,6 +103,7 @@ namespace RoomCast.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            TempData["Message"] = "Media added to album successfully.";
             return RedirectToAction(nameof(Details), new { id = albumId });
         }
 
@@ -162,7 +164,7 @@ namespace RoomCast.Controllers
                 catch (DbUpdateException ex)
                 {
                     Console.WriteLine($"Error updating album: {ex.InnerException?.Message}");
-                    ModelState.AddModelError("", "Error saving changes. Please ensure the album is still valid.");
+                    ModelState.AddModelError("", "Error saving changes. Please try again.");
                 }
             }
 
@@ -189,8 +191,7 @@ namespace RoomCast.Controllers
 
             if (album != null)
             {
-                // Remove related AlbumFiles before deleting Album (avoid FK error)
-                if (album.AlbumFiles != null)
+                if (album.AlbumFiles?.Any() == true)
                     _context.AlbumFiles.RemoveRange(album.AlbumFiles);
 
                 _context.Albums.Remove(album);
@@ -200,18 +201,18 @@ namespace RoomCast.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // ✅ Assign to Screen (GET)
+        // ✅ Assign to Screen (GET) — Fixed route parameter (albumId)
         [HttpGet]
-        public async Task<IActionResult> AssignToScreen(int id)
+        public async Task<IActionResult> AssignToScreen(int albumId)
         {
-            var album = await _context.Albums.FindAsync(id);
+            var album = await _context.Albums.FindAsync(albumId);
             if (album == null) return NotFound();
 
             var screens = await _context.Screens.ToListAsync();
 
             var model = new AlbumAssignmentViewModel
             {
-                AlbumId = id,
+                AlbumId = albumId,
                 Screens = screens
             };
 
@@ -238,6 +239,7 @@ namespace RoomCast.Controllers
                 await _context.SaveChangesAsync();
             }
 
+            TempData["Message"] = "Album assigned to screen successfully.";
             return RedirectToAction(nameof(Index));
         }
     }

@@ -8,10 +8,10 @@
         <h2 class="text-center text-3xl font-semibold text-slate-900">Welcome back</h2>
         <p class="mt-2 text-center text-sm text-slate-500">Sign in to access your media library.</p>
 
-        @if (ViewBag.RegistrationSucceeded == true)
+        @if (ViewBag.RegistrationSucceeded != null)
         {
             <div class="mt-6 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm" role="alert">
-                Registration complete. Please sign in with your new account.
+                @ViewBag.RegistrationSucceeded
             </div>
         }
 
@@ -19,7 +19,9 @@
             @Html.AntiForgeryToken()
             <input type="hidden" name="returnUrl" value="@ViewData["ReturnUrl"]" />
 
-            <div asp-validation-summary="ModelOnly" class="validation-summary rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm" role="alert"></div>
+            <div asp-validation-summary="ModelOnly"
+                 class="validation-summary rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700 shadow-sm"
+                 role="alert"></div>
 
             <div class="space-y-2">
                 <label asp-for="Email" class="text-sm font-semibold text-slate-700"></label>
@@ -31,7 +33,7 @@
 
             <div class="space-y-2">
                 <label asp-for="Password" class="text-sm font-semibold text-slate-700"></label>
-                <input asp-for="Password"
+                <input asp-for="Password" type="password"
                        class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200"
                        autocomplete="current-password" />
                 <span asp-validation-for="Password" class="text-sm text-red-600"></span>
