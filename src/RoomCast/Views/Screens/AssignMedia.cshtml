@@ -1,0 +1,54 @@
+﻿@using RoomCast.ViewModels
+@model ScreenAssignmentViewModel
+
+@{
+    ViewData["Title"] = "Assign Media";
+    Layout = "_Layout";
+}
+
+<div class="max-w-3xl mx-auto bg-white p-8 shadow-md rounded-lg mt-6">
+    <h2 class="text-2xl font-bold mb-4 text-slate-800">
+        Assign Media Files to
+        <span class="text-indigo-600 font-semibold">@Model.ScreenName</span>
+    </h2>
+
+    <form asp-action="AssignMedia" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ScreenId" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            @foreach (var media in Model.AllMediaFiles)
+            {
+                <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded">
+                    <input type="checkbox"
+                           name="SelectedMediaIds"
+                           value="@media.FileId"
+                           id="media-@media.FileId"
+                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                    @(Model.SelectedMediaIds.Contains(media.FileId) ? "checked" : "") />
+                    <label for="media-@media.FileId" class="text-slate-700">
+                        @media.Title (@media.FileType)
+                    </label>
+                </div>
+            }
+        </div>
+
+        <div class="flex justify-end space-x-4 mt-6">
+            <a asp-action="Index"
+               class="inline-block bg-gray-500 text-white font-semibold px-4 py-2 rounded hover:bg-gray-600 transition duration-200">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="inline-block bg-indigo-600 text-white font-semibold px-4 py-2 rounded hover:bg-indigo-700 transition duration-200">
+                Assign Media
+            </button>
+        </div>
+
+
+
+    </form>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+}

@@ -1,0 +1,142 @@
+﻿@model RoomCast.Models.MediaFile
+@{
+    ViewData["Title"] = "File Details";
+    var sizeInMb = Model.FileSize / (1024d * 1024d);
+    var uploadedAt = Model.CreatedAt.ToLocalTime().ToString("f");
+    var duration = Model.DurationSeconds.HasValue ? System.TimeSpan.FromSeconds(Model.DurationSeconds.Value) : (System.TimeSpan?)null;
+    var durationDisplay = duration.HasValue
+        ? (duration.Value.TotalHours >= 1
+            ? duration.Value.ToString(@"hh\:mm\:ss")
+            : duration.Value.ToString(@"mm\:ss"))
+        : null;
+
+    var isImage = string.Equals(Model.FileType, "Picture", System.StringComparison.OrdinalIgnoreCase) ||
+                  string.Equals(Model.FileType, "Image", System.StringComparison.OrdinalIgnoreCase);
+    var imageExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+    var imageExtensionsList = string.Join(", ", imageExtensions);
+    var imageExtensionsAccept = string.Join(',', imageExtensions);
+    const int maxReplacementFileSizeMb = 100;
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="mb-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm">
+        @TempData["Message"]
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="mb-4 rounded-xl border-l-4 border-red-500 bg-red-50 p-4 text-sm text-red-700 shadow-sm">
+        @TempData["Error"]
+    </div>
+}
+
+<div class="flex flex-col gap-8 lg:flex-row">
+    <section class="flex-1 space-y-6">
+        <div class="flex flex-col gap-3">
+            <h2 class="text-3xl font-semibold text-slate-900">@Model.Title</h2>
+            <p class="text-sm text-slate-500">Uploaded @uploadedAt</p>
+        </div>
+
+        <dl class="grid grid-cols-1 gap-4 rounded-2xl bg-white p-6 text-sm text-slate-600 shadow-sm ring-1 ring-slate-200 sm:grid-cols-2">
+            <div>
+                <dt class="font-semibold text-slate-900">Original File</dt>
+                <dd class="mt-1 break-words">@Model.OriginalFileName</dd>
+            </div>
+            <div>
+                <dt class="font-semibold text-slate-900">Type</dt>
+                <dd class="mt-1">@Model.FileType (@Model.FileFormat)</dd>
+            </div>
+            <div>
+                <dt class="font-semibold text-slate-900">Size</dt>
+                <dd class="mt-1">@string.Format("{0:0.##} MB", sizeInMb)</dd>
+            </div>
+            @if (durationDisplay != null)
+            {
+                <div>
+                    <dt class="font-semibold text-slate-900">Duration</dt>
+                    <dd class="mt-1">@durationDisplay</dd>
+                </div>
+            }
+            @if (!string.IsNullOrWhiteSpace(Model.Tags))
+            {
+                <div class="sm:col-span-2">
+                    <dt class="font-semibold text-slate-900">Tags</dt>
+                    <dd class="mt-1">@Model.Tags</dd>
+                </div>
+            }
+        </dl>
+
+        <div>
+            <a class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+               href="@Model.FilePath"
+               target="_blank"
+               rel="noopener noreferrer">
+                Open File
+            </a>
+        </div>
+
+        @if (isImage)
+        {
+            <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200">
+                <h3 class="text-lg font-semibold text-slate-900">Replace image</h3>
+                <p class="mt-1 text-sm text-slate-600">Upload a new image to overwrite the current file.</p>
+
+                <form method="post"
+                      asp-action="ReplaceImage"
+                      asp-route-id="@Model.FileId"
+                      enctype="multipart/form-data"
+                      class="mt-4 space-y-4">
+                    @Html.AntiForgeryToken()
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-slate-800" for="replacement">
+                            New image file
+                        </label>
+                        <input type="file"
+                               id="replacement"
+                               name="replacement"
+                               accept="@imageExtensionsAccept"
+                               class="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 shadow-sm transition file:mr-4 file:rounded-md file:border-0 file:bg-indigo-600 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:border-indigo-300 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-200"
+                               required />
+                        <p class="text-xs text-slate-500">
+                            Allowed formats: @imageExtensionsList. Maximum size @maxReplacementFileSizeMb&nbsp;MB.
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <button type="submit"
+                                class="inline-flex items-center justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
+                            Replace image
+                        </button>
+                        <a class="inline-flex items-center justify-center rounded-md border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-400 hover:text-slate-900"
+                           href="@Model.FilePath"
+                           target="_blank"
+                           rel="noopener noreferrer">
+                            View current file
+                        </a>
+                    </div>
+                </form>
+            </div>
+        }
+    </section>
+
+    <aside class="flex flex-1 items-start justify-center">
+        @if (isImage)
+        {
+            <img src="@Model.FilePath"
+                 alt="@Model.Title"
+                 class="max-h-[480px] w-full rounded-2xl object-contain shadow-lg" />
+        }
+        else if (string.Equals(Model.FileType, "Video", System.StringComparison.OrdinalIgnoreCase))
+        {
+            <video controls poster="@Model.ThumbnailPath" class="max-h-[480px] w-full rounded-2xl shadow-lg">
+                <source src="@Model.FilePath" type="video/mp4" />
+            </video>
+        }
+        else
+        {
+            <div class="w-full rounded-2xl border border-dashed border-slate-300 bg-white p-10 text-center text-sm text-slate-500 shadow-sm">
+                Preview unavailable. Use the button above to open or download the file.
+            </div>
+        }
+    </aside>
+</div>

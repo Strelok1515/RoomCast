@@ -1,0 +1,86 @@
+﻿@model IEnumerable<RoomCast.Models.Casting.Screen>
+
+@{
+    ViewData["Title"] = "Screens";
+}
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-slate-800">Screens</h1>
+    <a href="@Url.Action("Create", "Screens")"
+       class="inline-block text-white px-4 py-2 rounded-md shadow transition"
+       style="background-color: #4f46e5;">
+        + Add Screen
+    </a>
+</div>
+
+<table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+    <thead style="background-color: #f3f4f6; color: #374151; text-transform: uppercase; font-size: 0.875rem;">
+        <tr>
+            <th class="px-6 py-3 text-left">Name</th>
+            <th class="px-6 py-3 text-left">Location</th>
+            <th class="px-6 py-3 text-left">Description</th>
+            <th class="px-6 py-3 text-center">Assigned</th>
+            <th class="px-6 py-3 text-center">Actions</th>
+        </tr>
+    </thead>
+
+    <tbody style="color: #1f2937; font-size: 0.875rem;">
+        @foreach (var item in Model)
+        {
+            <tr style="border-bottom: 1px solid #e5e7eb;"
+                onmouseover="this.style.backgroundColor='#f9fafb'"
+                onmouseout="this.style.backgroundColor='white'">
+                <td class="px-6 py-4">@item.Name</td>
+                <td class="px-6 py-4">@item.Location</td>
+                <td class="px-6 py-4">@item.Description</td>
+
+                <td class="px-6 py-4 text-center text-sm leading-5 text-gray-900">
+                    <div>
+                        <strong>Media:</strong> @(item.ScreenMediaAssignments?.Count ?? 0)
+                    </div>
+                    <div class="mt-1">
+                        <strong>Albums:</strong>
+                        @if (item.AlbumScreenAssignments != null && item.AlbumScreenAssignments.Any())
+                        {
+                            <ul class="list-disc ml-4 text-left">
+                                @foreach (var assignment in item.AlbumScreenAssignments)
+                                {
+                                    <li>@assignment.Album?.AlbumName</li>
+                                }
+                            </ul>
+                        }
+                        else
+                        {
+                            <span class="text-gray-500">None</span>
+                        }
+                    </div>
+                </td>
+
+                <td class="px-6 py-4 text-center">
+                    <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem;">
+                        <a href="@Url.Action("AssignMedia", "Screens", new { id = item.ScreenId })"
+                           class="inline-block text-white px-3 py-1 rounded-md text-sm transition"
+                           style="background-color: #2563eb;">
+                            Assign
+                        </a>
+                        <a href="@Url.Action("Edit", "Screens", new { id = item.ScreenId })"
+                           class="inline-block text-white px-3 py-1 rounded-md text-sm transition"
+                           style="background-color: #f59e0b;">
+                            Edit
+                        </a>
+                        <a href="@Url.Action("Delete", "Screens", new { id = item.ScreenId })"
+                           class="inline-block text-white px-3 py-1 rounded-md text-sm transition"
+                           style="background-color: #dc2626;">
+                            Delete
+                        </a>
+                        <a href="@Url.Action("ScreenDisplay", "Screens", new { screenId = item.ScreenId })"
+                           class="inline-block text-white px-3 py-1 rounded-md text-sm transition"
+                           style="background-color: #374151;">
+                            Preview
+                        </a>
+                    </div>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

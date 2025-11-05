@@ -1,0 +1,48 @@
+﻿@model RoomCast.Models.Casting.Screen
+
+@{
+    ViewData["Title"] = "Edit Screen";
+}
+
+<h1 class="text-2xl font-bold mb-6 text-slate-800">Edit Screen</h1>
+
+<form asp-action="Edit" method="post" class="space-y-6">
+    <input type="hidden" asp-for="ScreenId" />
+
+    <div>
+        <label asp-for="Name" class="block text-sm font-medium text-slate-700">Screen Name</label>
+        <input asp-for="Name" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
+    </div>
+
+    <div>
+        <label asp-for="Location" class="block text-sm font-medium text-slate-700">Screen Location</label>
+        <input asp-for="Location" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
+        <span asp-validation-for="Location" class="text-red-500 text-sm"></span>
+    </div>
+
+    <div>
+        <label asp-for="Description" class="block text-sm font-medium text-slate-700">Screen Description</label>
+        <textarea asp-for="Description" rows="4" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
+        <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
+    </div>
+
+    
+        <div class="flex justify-end gap-4 mt-6">
+            <!-- Cancel Button -->
+            <a asp-action="Index"
+               class="bg-gray-500 text-white font-semibold border border-gray-600 px-4 py-2 rounded hover:bg-gray-600 transition duration-200">
+                Cancel
+            </a>
+
+            <!-- Update Button -->
+            <button type="submit"
+                    class="bg-indigo-600 text-white font-semibold border border-indigo-700 px-4 py-2 rounded hover:bg-indigo-700 transition duration-200">
+                Update Screen
+            </button>
+        </div>
+
+    </>
+
+    
+</form>

@@ -1,0 +1,32 @@
+﻿@model RoomCast.Models.Album
+@{
+    ViewData["Title"] = "Delete Album";
+}
+
+<div class="max-w-xl space-y-6">
+    <div>
+        <h2 class="text-3xl font-semibold text-red-600">Delete Album</h2>
+        <p class="text-sm text-slate-600">Are you sure you want to delete this album? This action cannot be undone.</p>
+    </div>
+
+    <div class="bg-slate-100 rounded-lg p-4">
+        <p class="text-md font-medium text-slate-800">Album Name: <span class="font-semibold">@Model.AlbumName</span></p>
+        <p class="text-sm text-slate-500">Created: @Model.Timestamp.ToLocalTime().ToString("f")</p>
+    </div>
+
+    <form asp-action="Delete" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="AlbumId" />
+
+        <div class="flex gap-4">
+            <button type="submit"
+                    class="inline-flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-red-500">
+                Yes, Delete
+            </button>
+            <a asp-action="Index"
+               class="inline-flex items-center justify-center rounded-md bg-gray-200 px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition hover:bg-gray-300">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>

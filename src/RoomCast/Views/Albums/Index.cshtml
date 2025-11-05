@@ -1,0 +1,56 @@
+﻿@model IEnumerable<RoomCast.Models.Album>
+@{
+    ViewData["Title"] = "My Albums";
+}
+
+<div class="flex flex-col gap-4 mb-8">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-slate-800">My Albums</h2>
+        <a asp-action="Create"
+           class="inline-block px-4 py-2 bg-emerald-600 text-white text-sm font-semibold rounded-md shadow-sm hover:bg-emerald-500">
+            Create Album
+        </a>
+    </div>
+
+    <!-- Search Bar -->
+    <form method="get" class="flex items-center gap-2 w-full sm:w-1/3 mb-4">
+        <input type="text"
+               name="searchString"
+               value="@ViewData["SearchString"]"
+               placeholder="Search by name"
+               class="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500" />
+        <button type="submit"
+                class="px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-md hover:bg-indigo-500">
+            Search
+        </button>
+    </form>
+</div>
+
+
+
+
+<table class="min-w-full bg-white border border-slate-200 rounded-md shadow">
+    <thead class="bg-slate-100 text-slate-700">
+        <tr>
+            <th class="px-4 py-2 text-left">Album Name</th>
+            <th class="px-4 py-2 text-left">Created</th>
+            <th class="px-4 py-2 text-left">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var album in Model)
+        {
+            <tr class="border-t border-slate-200 hover:bg-slate-50">
+                <td class="px-4 py-2">@album.AlbumName</td>
+                <td class="px-4 py-2">@album.Timestamp.ToLocalTime().ToString("g")</td>
+                <td class="px-4 py-2 space-x-2">
+                    <a asp-action="Details" asp-route-id="@album.AlbumId" class="text-indigo-600 hover:underline">View</a> |
+                    <a asp-action="Edit" asp-route-id="@album.AlbumId" class="text-blue-600 hover:underline">Edit</a> |
+                    <a asp-action="Delete" asp-route-id="@album.AlbumId" class="text-red-600 hover:underline">Delete</a> |
+                    <a asp-action="AddMedia" asp-route-id="@album.AlbumId" class="text-emerald-600 hover:underline">Add Media</a> |
+                    <a asp-action="AssignToScreen" asp-route-id="@album.AlbumId" class="text-slate-700 hover:underline">Assign to Screen</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

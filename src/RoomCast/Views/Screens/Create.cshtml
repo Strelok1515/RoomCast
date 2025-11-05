@@ -1,0 +1,43 @@
+﻿@model RoomCast.Models.Casting.Screen
+
+@{
+    ViewData["Title"] = "Create Screen";
+    Layout = "_Layout";
+}
+
+<h1 class="text-3xl font-bold mb-6 text-slate-800">Add New Screen</h1>
+
+<form asp-action="Create" method="post" class="max-w-2xl bg-white p-6 rounded shadow-md">
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="text-red-600 mb-4"></div>
+
+    <div class="mb-4">
+        <label asp-for="Name" class="block text-sm font-medium text-gray-700">Screen Name</label>
+        <input asp-for="Name" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+        <span asp-validation-for="Name" class="text-sm text-red-600"></span>
+    </div>
+
+    <div class="mb-4">
+        <label asp-for="Location" class="block text-sm font-medium text-gray-700">Location</label>
+        <input asp-for="Location" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
+        <span asp-validation-for="Location" class="text-sm text-red-600"></span>
+    </div>
+
+    <div class="mb-6">
+        <label asp-for="Description" class="block text-sm font-medium text-gray-700">Description</label>
+        <textarea asp-for="Description" rows="4" class="form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+        <span asp-validation-for="Description" class="text-sm text-red-600"></span>
+    </div>
+
+    <div class="flex justify-end space-x-4">
+        <a asp-action="Index" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</a>
+        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md">Save</button>
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

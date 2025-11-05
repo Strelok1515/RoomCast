@@ -1,0 +1,54 @@
+﻿@model RoomCast.ViewModels.ScreenDisplayViewModel
+
+@{
+    ViewData["Title"] = "Screen Details";
+}
+
+<div class="container py-5">
+    <h2 class="text-2xl font-bold mb-4">Screen: @Model.ScreenName</h2>
+
+    <!-- Assigned Albums Section -->
+    <div class="mb-6">
+        <h3 class="text-xl font-semibold mb-2">📁 Assigned Albums</h3>
+        @if (Model.AssignedAlbums.Any())
+        {
+            <ul class="list-disc pl-6 space-y-2">
+                @foreach (var album in Model.AssignedAlbums)
+                {
+                    <li>
+                        <span class="font-medium">@album.AlbumName</span>
+                        <a asp-controller="Albums" asp-action="Details" asp-route-id="@album.AlbumId"
+                           class="ml-2 text-blue-600 hover:underline">View Album</a>
+                    </li>
+                }
+            </ul>
+        }
+        else
+        {
+            <p class="text-gray-500">No albums assigned to this screen.</p>
+        }
+    </div>
+
+    <!-- Assigned Media Files Section -->
+    <div class="mb-6">
+        <h3 class="text-xl font-semibold mb-2">🎞 Assigned Media Files (@Model.AssignedMediaFiles.Count)</h3>
+        @if (Model.AssignedMediaFiles.Any())
+        {
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                @foreach (var media in Model.AssignedMediaFiles)
+                {
+                    <div class="border rounded shadow p-3">
+                        <h4 class="font-semibold text-sm">@media.Title</h4>
+                        <p class="text-xs text-gray-500 mb-2">Type: @media.FileType</p>
+                        <a href="@Url.Content($"~/uploads/{media.FilePath}")" target="_blank"
+                           class="text-blue-600 hover:underline">Open Media</a>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-gray-500">No media files directly assigned.</p>
+        }
+    </div>
+</div>

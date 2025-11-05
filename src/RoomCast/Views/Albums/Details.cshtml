@@ -1,0 +1,45 @@
+﻿@model RoomCast.Models.ViewModels.AlbumDetailsViewModel
+@{
+    ViewData["Title"] = Model.Album.AlbumName;
+}
+
+<h2 class="text-2xl font-semibold mb-6">@Model.Album.AlbumName</h2>
+
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    @foreach (var file in Model.MediaFiles)
+    {
+        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="relative w-full h-48 bg-gray-100 flex items-center justify-center">
+                @if (file.FileType.ToLower().Contains("image") || file.StoredFileName.EndsWith(".jpg") || file.StoredFileName.EndsWith(".jpeg") || file.StoredFileName.EndsWith(".png") || file.StoredFileName.EndsWith(".gif"))
+                {
+                    <img src="@Url.Content($"{file.FilePath}")" alt="@file.Title"
+                         class="object-cover w-full h-full" />
+
+                }
+                else
+                {
+                    <div class="text-center text-gray-500 p-4">
+                        <i class="bi bi-file-earmark-fill text-4xl"></i>
+                        <p class="text-sm">Unsupported File Type</p>
+                    </div>
+                }
+            </div>
+
+            <div class="p-4 flex flex-col gap-2">
+                <h3 class="font-medium text-lg truncate">@file.Title</h3>
+
+                <a href="@Url.Content($"~/uploads/{file.FilePath}")"
+                   download
+                   class="text-blue-600 hover:underline text-sm">
+                    Download
+                </a>
+
+                <p class="text-xs text-gray-500">Type: @file.FileType</p>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="mt-6">
+    <a asp-action="Index" class="text-blue-600 hover:underline text-sm">← Back to Albums</a>
+</div>

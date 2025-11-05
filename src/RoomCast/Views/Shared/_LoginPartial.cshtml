@@ -1,0 +1,39 @@
+@using Microsoft.AspNetCore.Identity
+@using RoomCast.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<ul class="flex items-center gap-4 text-sm font-semibold text-slate-100">
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <li class="text-slate-300">
+            Hello @User.Identity?.Name!
+        </li>
+        <li>
+            <form asp-controller="Account" asp-action="Logout" method="post" class="inline">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        class="rounded-full border border-white/30 px-3 py-1 text-slate-100 transition hover:border-white hover:bg-white/10">
+                    Logout
+                </button>
+            </form>
+        </li>
+    }
+    else
+    {
+        <li>
+            <a class="rounded-full border border-white/40 px-3 py-1 text-slate-100 transition hover:border-white hover:bg-white/10"
+               asp-controller="Account"
+               asp-action="Login">
+                Login
+            </a>
+        </li>
+        <li>
+            <a class="rounded-full bg-white px-3 py-1 text-slate-900 transition hover:bg-slate-100"
+               asp-controller="Account"
+               asp-action="SignUp">
+                Sign Up
+            </a>
+        </li>
+    }
+</ul>

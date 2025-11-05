@@ -1,0 +1,26 @@
+@using RoomCast.Models
+@{
+    ViewData["Title"] = "Add Media to Album";
+    var files = ViewBag.Files as List<MediaFile>;
+    var albumId = ViewBag.AlbumId as int? ?? 0;
+}
+
+<h2>Add Media to Album</h2>
+
+<form asp-action="AddMedia" method="post">
+    <input type="hidden" name="albumId" value="@albumId" />
+
+    <div class="mb-4">
+        <label for="fileId" class="block font-medium text-gray-700">Select Media File</label>
+        <select name="fileId" class="form-select mt-1 block w-full">
+            @foreach (var file in files)
+            {
+                <option value="@file.FileId">@file.Title (@file.FileType)</option>
+            }
+        </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<a asp-action="Index" class="text-blue-500 text-sm">Back to Albums</a>

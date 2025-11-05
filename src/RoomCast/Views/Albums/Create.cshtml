@@ -1,0 +1,31 @@
+﻿@model RoomCast.Models.Album
+@{
+    ViewData["Title"] = "Create Album";
+}
+
+<div class="max-w-xl space-y-6">
+    <div>
+        <h2 class="text-3xl font-semibold text-slate-900">Create Album</h2>
+        <p class="text-sm text-slate-500">Give your album a descriptive name to make it easy to find later.</p>
+    </div>
+
+    <form asp-action="Create" method="post" class="space-y-5">
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="text-sm text-red-600"></div>
+        <div class="space-y-2">
+            <label asp-for="AlbumName" class="text-sm font-semibold text-slate-700"></label>
+            <input asp-for="AlbumName"
+                   class="w-full rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm text-slate-700 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
+            <span asp-validation-for="AlbumName" class="text-sm text-red-600"></span>
+        </div>
+
+        <button type="submit"
+                class="inline-flex items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600">
+            Save
+        </button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
