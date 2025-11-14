@@ -1,36 +1,67 @@
 ﻿@model RoomCast.Models.ViewModels.AlbumAssignmentViewModel
-
 @{
     ViewData["Title"] = "Assign Album to Screen";
-    Layout = "_Layout"; // Optional: include this if you're using a shared layout
 }
 
-<div class="max-w-2xl mx-auto px-4 py-6">
-    <h2 class="text-2xl font-semibold mb-6 text-slate-800">Assign Album to Screen</h2>
+<div class="max-w-4xl mx-auto px-8 py-12 bg-white rounded-2xl shadow-md ring-1 ring-slate-200">
 
-    <form asp-action="AssignToScreen" method="post">
+    <!-- Header -->
+    <div class="mb-8">
+        <h2 class="text-3xl font-bold text-slate-900">Assign Album to Screen</h2>
+        <p class="text-sm text-slate-500 mt-2">
+            Choose which display screen should show this album.
+        </p>
+    </div>
+
+    <!-- Info Card -->
+    <div class="p-5 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-4 mb-10">
+        <div class="flex items-center justify-center w-12 h-12 rounded-lg bg-indigo-100">
+            <i class="bi bi-display text-indigo-600 text-2xl"></i>
+        </div>
+
+        <div>
+            <p class="font-semibold text-slate-800 text-lg">Target Display Screen</p>
+            <p class="text-sm text-slate-500">Your album will be shown on the selected screen.</p>
+        </div>
+    </div>
+
+    <form asp-action="AssignToScreen" method="post" class="space-y-10">
         @Html.AntiForgeryToken()
-
         <input type="hidden" asp-for="AlbumId" />
 
-        <div class="mb-4">
-            <label asp-for="SelectedScreenId" class="block text-sm font-medium text-gray-700">Select Screen</label>
-            <select asp-for="SelectedScreenId" class="form-select mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+        <!-- Form Field -->
+        <div class="space-y-3">
+            <label asp-for="SelectedScreenId" class="block text-sm font-semibold text-slate-700">
+                Display Screen
+            </label>
+
+            <select asp-for="SelectedScreenId"
+                    class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm shadow-sm
+                           focus:ring-indigo-500 focus:border-indigo-500 transition">
                 <option value="">-- Choose a screen --</option>
                 @foreach (var screen in Model.Screens)
                 {
                     <option value="@screen.ScreenId">@screen.Name</option>
                 }
             </select>
+
             <span asp-validation-for="SelectedScreenId" class="text-sm text-red-600"></span>
         </div>
 
-        <div class="flex items-center justify-between">
-            <a asp-action="Index" class="text-sm text-gray-600 hover:underline">← Back to Albums</a>
+        <!-- Footer -->
+        <div class="flex justify-between items-center pt-6 border-t border-slate-200">
+
+            <a asp-action="Index"
+               class="inline-flex items-center text-sm text-slate-600 hover:text-slate-900 transition">
+                <i class="bi bi-arrow-left me-1"></i> Back to Albums
+            </a>
+
             <button type="submit"
-                    class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md shadow-sm">
+                    class="mt-3 bg-indigo-600 text-white px-6 py-3 rounded-xl
+                    shadow-sm font-medium transition">
                 Assign Album
             </button>
         </div>
+
     </form>
 </div>

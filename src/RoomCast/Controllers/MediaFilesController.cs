@@ -150,6 +150,44 @@ namespace RoomCast.Controllers
 
             media.FilePath = $"/uploads/{uploadSubFolder}/{media.StoredFileName}";
 
+            // Convert Office documents to PDF using LibreOffice
+            if (normalizedType == "Document")
+            {
+                var ext = extension.ToLowerInvariant();
+
+                var convertibleDocs = new HashSet<string>
+        {
+            ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx"
+        };
+
+                if (convertibleDocs.Contains(ext))
+                {
+                    var sofficePath = @"C:\Program Files\LibreOffice\program\soffice.exe";
+
+                    var pdfFileName = Path.ChangeExtension(media.StoredFileName, ".pdf");
+                    var pdfPhysicalPath = Path.Combine(uploadsRoot, pdfFileName);
+
+                    var convertInfo = new ProcessStartInfo
+                    {
+                        FileName = sofficePath,
+                        Arguments = $"--headless --convert-to pdf \"{physicalPath}\" --outdir \"{uploadsRoot}\"",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    };
+
+                    using var process = Process.Start(convertInfo);
+                    await process.WaitForExitAsync();
+
+                    if (System.IO.File.Exists(pdfPhysicalPath))
+                    {
+                        media.FilePath = $"/uploads/{uploadSubFolder}/{pdfFileName}";
+                        media.FileFormat = ".pdf";
+                    }
+                }
+            }
+
             if (string.Equals(normalizedType, "Video", StringComparison.OrdinalIgnoreCase))
             {
                 media.DurationSeconds = await TryExtractVideoDurationAsync(physicalPath);
@@ -162,6 +200,7 @@ namespace RoomCast.Controllers
             TempData["Message"] = $"Uploaded '{media.Title}' successfully.";
             return RedirectToAction(nameof(Index));
         }
+
 
         // GET: Details
         public async Task<IActionResult> Details(int id)

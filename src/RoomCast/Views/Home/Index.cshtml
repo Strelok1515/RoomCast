@@ -2,51 +2,93 @@
     ViewData["Title"] = "Welcome to RoomCast";
 }
 
-<!-- Soft background gradient wrapper -->
-<div class="bg-gradient-to-b from-slate-50 to-slate-100 min-h-screen pt-10 md:pt-16">
+<div class="bg-gradient-to-b from-white to-slate-100 min-h-screen">
 
     <!-- HERO SECTION -->
-    <section class="text-center py-20 px-6">
-        <h1 class="text-5xl font-extrabold text-slate-900 mb-6">
-            Share your media. <span class="text-indigo-600">Anywhere.</span>
-        </h1>
-        <p class="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
-            RoomCast lets you upload, organize, and display your digital files seamlessly across devices.
-            Simple, secure, and made for teams and creators.
-        </p>
-        <br />
+    <section class="text-center py-24 px-6 max-w-5xl mx-auto">
 
-        <div class="flex flex-wrap justify-center gap-4">
-            <a asp-controller="MediaFiles" asp-action="Upload" aria-label="Upload a new file"
-               class="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow hover:bg-indigo-500 transition">
+        <h1 class="text-5xl md:text-6xl font-extrabold text-slate-900 leading-tight mb-6">
+            Share Your Media. <span class="text-indigo-600">Anywhere.</span>
+        </h1>
+
+        <p class="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mb-10">
+            Upload, organize, and display your media instantly across connected screens —
+            built for creators, teams, classrooms, and businesses.
+        </p>
+
+        <!-- BUTTONS -->
+        <div class="flex justify-center gap-5 mt-4">
+            <a asp-controller="MediaFiles" asp-action="Upload"
+               class="px-8 py-4 bg-indigo-600 text-white rounded-xl font-semibold shadow-md
+                      hover:bg-indigo-500 hover:shadow-lg hover:-translate-y-1 transition-all">
                 Get Started
             </a>
-            <a asp-controller="MediaFiles" asp-action="Index" aria-label="View my uploaded files"
-               class="px-6 py-3 border border-indigo-600 text-indigo-700 font-semibold rounded-lg hover:bg-indigo-50 transition">
-                Show My Files
+
+            <a asp-controller="MediaFiles" asp-action="Index"
+               class="px-8 py-4 border border-indigo-600 text-indigo-700 rounded-xl font-semibold
+                      hover:bg-indigo-50 hover:border-indigo-500 hover:-translate-y-1 transition-all">
+                View My Files
             </a>
         </div>
         <br />
     </section>
 
-    <!-- FEATURE CARDS -->
-    <section class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto py-16 px-6">
-        <div class="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-            <i class="bi bi-cloud-upload text-indigo-600 text-4xl mb-3"></i>
-            <h3 class="text-xl font-semibold text-slate-800 mb-2">Upload</h3>
-            <p class="text-slate-600 text-sm">Upload images, PDFs, or videos effortlessly from any device.</p>
-        </div>
-        <div class="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-            <i class="bi bi-collection text-indigo-600 text-4xl mb-3"></i>
-            <h3 class="text-xl font-semibold text-slate-800 mb-2">Organize</h3>
-            <p class="text-slate-600 text-sm">Group your media into albums for better management and sharing.</p>
-        </div>
-        <div class="bg-white p-8 rounded-xl shadow hover:shadow-lg transition text-center">
-            <i class="bi bi-display text-indigo-600 text-4xl mb-3"></i>
-            <h3 class="text-xl font-semibold text-slate-800 mb-2">Display</h3>
-            <p class="text-slate-600 text-sm">Instantly display your media on connected screens anywhere.</p>
+
+
+    <!-- HOW ROOMCAST WORKS -->
+    <section class="max-w-7xl mx-auto px-6 mt-20 mb-24">
+
+        <div class="bg-white rounded-2xl shadow-md ring-1 ring-slate-200 p-12">
+
+            <h2 class="text-4xl font-bold text-center text-slate-900 mb-12">
+                How RoomCast Works
+            </h2>
+
+            <div class="grid md:grid-cols-3 gap-12">
+
+                <!-- UPLOAD CARD -->
+                <div class="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl text-center
+                            transition-all hover:-translate-y-2">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="bi bi-cloud-upload text-indigo-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-slate-800 mb-2">Upload</h3>
+                    <p class="text-slate-600 text-sm">
+                        Upload images, documents, and videos from any device — securely and instantly.
+                    </p>
+                </div>
+
+                <!-- ORGANIZE CARD -->
+                <div class="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl text-center
+                            transition-all hover:-translate-y-2">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="bi bi-folder text-indigo-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-slate-800 mb-2">Organize</h3>
+                    <p class="text-slate-600 text-sm">
+                        Create albums to group your media, making sharing simple and fast.
+                    </p>
+                </div>
+
+                <!-- DISPLAY CARD -->
+                <div class="bg-white p-10 rounded-2xl shadow-md hover:shadow-xl text-center
+                            transition-all hover:-translate-y-2">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full mx-auto mb-6 flex items-center justify-center">
+                        <i class="bi bi-display text-indigo-600 text-4xl"></i>
+                    </div>
+                    <h3 class="text-2xl font-semibold text-slate-800 mb-2">Display</h3>
+                    <p class="text-slate-600 text-sm">
+                        Cast your albums instantly to any connected screen using RoomCast.
+                    </p>
+                </div>
+
+            </div>
         </div>
     </section>
+</div>
+
+
+
 
 
 

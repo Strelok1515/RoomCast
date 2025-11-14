@@ -3,43 +3,115 @@
     ViewData["Title"] = Model.Album.AlbumName;
 }
 
-<h2 class="text-2xl font-semibold mb-6">@Model.Album.AlbumName</h2>
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h2 class="text-3xl font-semibold text-slate-900">@Model.Album.AlbumName</h2>
+        <p class="text-slate-500 text-sm">Created @Model.Album.Timestamp.ToLocalTime().ToString("f")</p>
+    </div>
 
-<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-    @foreach (var file in Model.MediaFiles)
-    {
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="relative w-full h-48 bg-gray-100 flex items-center justify-center">
-                @if (file.FileType.ToLower().Contains("image") || file.StoredFileName.EndsWith(".jpg") || file.StoredFileName.EndsWith(".jpeg") || file.StoredFileName.EndsWith(".png") || file.StoredFileName.EndsWith(".gif"))
-                {
-                    <img src="@Url.Content($"{file.FilePath}")" alt="@file.Title"
-                         class="object-cover w-full h-full" />
-
-                }
-                else
-                {
-                    <div class="text-center text-gray-500 p-4">
-                        <i class="bi bi-file-earmark-fill text-4xl"></i>
-                        <p class="text-sm">Unsupported File Type</p>
-                    </div>
-                }
-            </div>
-
-            <div class="p-4 flex flex-col gap-2">
-                <h3 class="font-medium text-lg truncate">@file.Title</h3>
-
-                <a href="@Url.Content($"~/uploads/{file.FilePath}")"
-                   download
-                   class="text-blue-600 hover:underline text-sm">
-                    Download
-                </a>
-
-                <p class="text-xs text-gray-500">Type: @file.FileType</p>
-            </div>
-        </div>
-    }
+    <a asp-action="AddMedia"
+       asp-route-albumId="@Model.Album.AlbumId"
+       class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg shadow hover:bg-indigo-500 transition">
+        Add Media
+    </a>
 </div>
 
-<div class="mt-6">
-    <a asp-action="Index" class="text-blue-600 hover:underline text-sm">← Back to Albums</a>
+@if (TempData["Message"] != null)
+{
+    <div class="mb-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm text-emerald-800 shadow-sm">
+        @TempData["Message"]
+    </div>
+}
+
+@if (!Model.MediaFiles.Any())
+{
+    <div class="text-center p-8 text-slate-500 border rounded-xl bg-white shadow">
+        <i class="bi bi-folder-x text-4xl block mb-3 text-slate-400"></i>
+        This album has no media yet.
+    </div>
+}
+else
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+
+        @foreach (var file in Model.MediaFiles)
+        {
+            var isImage = file.FileType == "Picture" || file.FileType == "Image";
+            var isVideo = file.FileType == "Video";
+            var isDocument = file.FileType == "Document";
+
+            <div class="rounded-2xl bg-white shadow hover:shadow-lg transition overflow-hidden">
+
+                <!-- Thumbnail -->
+                <div class="h-48 w-full bg-slate-100 flex items-center justify-center overflow-hidden">
+                    @if (isImage)
+                    {
+                        <img src="@file.FilePath" class="w-full h-full object-cover" />
+                    }
+                    else if (isVideo)
+                    {
+                        <video class="w-full h-full object-cover" muted>
+                            <source src="@file.FilePath" />
+                        </video>
+                    }
+                    else if (isDocument)
+                    {
+                        <div class="flex flex-col items-center text-slate-500">
+                            <i class="bi bi-file-earmark-text text-5xl"></i>
+                            <span class="text-xs mt-1">@file.FileFormat?.ToUpper()</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Content -->
+                <div class="p-4 space-y-2">
+
+                    <h3 class="font-semibold text-slate-900 truncate">@file.Title</h3>
+                    <p class="text-xs uppercase text-slate-500">@file.FileType</p>
+
+                    <div class="flex gap-3 text-sm mt-2">
+
+                        <!-- Preview -->
+                        <a asp-controller="MediaFiles"
+                           asp-action="Preview"
+                           asp-route-id="@file.FileId"
+                           target="_blank"
+                           class="text-indigo-600 hover:underline">
+                            Preview
+                        </a>
+
+                        <!-- Download -->
+                        <a href="@file.FilePath"
+                           download
+                           class="text-slate-600 hover:underline">
+                            Download
+                        </a>
+                    </div>
+
+                    <!-- REMOVE Button -->
+                    <form asp-action="RemoveMedia"
+                          method="post"
+                          class="mt-3">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="albumId" value="@Model.Album.AlbumId" />
+                        <input type="hidden" name="fileId" value="@file.FileId" />
+
+                        <button type="submit"
+                                class="text-red-600 text-sm hover:underline">
+                            Remove from Album
+                        </button>
+                    </form>
+
+                </div>
+            </div>
+        }
+
+    </div>
+}
+
+<div class="mt-8">
+    <a asp-action="Index"
+       class="inline-flex items-center text-sm text-slate-600 hover:text-slate-800">
+        <i class="bi bi-arrow-left me-1"></i> Back to Albums
+    </a>
 </div>

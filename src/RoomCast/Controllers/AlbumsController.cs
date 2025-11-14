@@ -85,27 +85,44 @@ namespace RoomCast.Controllers
             return View();
         }
 
-        // ✅ Add Media (POST)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddMedia(int albumId, int fileId)
+        public async Task<IActionResult> AddMedia(int albumId, List<int> fileIds)
         {
-            var exists = await _context.AlbumFiles
-                .AnyAsync(x => x.AlbumId == albumId && x.FileId == fileId);
-
-            if (!exists)
+            if (fileIds == null || !fileIds.Any())
             {
-                _context.AlbumFiles.Add(new AlbumFile
-                {
-                    AlbumId = albumId,
-                    FileId = fileId
-                });
-                await _context.SaveChangesAsync();
+                TempData["Error"] = "No media selected.";
+                return RedirectToAction(nameof(AddMedia), new { albumId });
             }
+
+            foreach (var fileId in fileIds)
+            {
+                var fileExists = await _context.MediaFiles.AnyAsync(m => m.FileId == fileId);
+                var albumExists = await _context.Albums.AnyAsync(a => a.AlbumId == albumId);
+
+                // Prevent FK failures
+                if (!fileExists || !albumExists)
+                    continue;
+
+                var alreadyAssigned = await _context.AlbumFiles
+                    .AnyAsync(x => x.AlbumId == albumId && x.FileId == fileId);
+
+                if (!alreadyAssigned)
+                {
+                    _context.AlbumFiles.Add(new AlbumFile
+                    {
+                        AlbumId = albumId,
+                        FileId = fileId
+                    });
+                }
+            }
+
+            await _context.SaveChangesAsync();
 
             TempData["Message"] = "Media added to album successfully.";
             return RedirectToAction(nameof(Details), new { id = albumId });
         }
+
 
         // ✅ Album Details
         [HttpGet]
@@ -241,6 +258,24 @@ namespace RoomCast.Controllers
 
             TempData["Message"] = "Album assigned to screen successfully.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // ✅ Remove a media file from an album
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RemoveMedia(int albumId, int fileId)
+        {
+            var entry = await _context.AlbumFiles
+                .FirstOrDefaultAsync(x => x.AlbumId == albumId && x.FileId == fileId);
+
+            if (entry != null)
+            {
+                _context.AlbumFiles.Remove(entry);
+                await _context.SaveChangesAsync();
+            }
+
+            TempData["Message"] = "Media removed from album.";
+            return RedirectToAction(nameof(Details), new { id = albumId });
         }
     }
 }
