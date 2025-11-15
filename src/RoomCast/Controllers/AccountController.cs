@@ -88,13 +88,22 @@ namespace RoomCast.Controllers
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewData["ReturnUrl"] = returnUrl;
+            // Load saved email from cookie
+            var savedEmail = Request.Cookies["RememberedEmail"];
+            var model = new LoginViewModel();
+
+            if (!string.IsNullOrEmpty(savedEmail))
+                model.Email = savedEmail; // Pre-fill the email
+
+            if (!string.IsNullOrEmpty(returnUrl))
+                ViewBag.ReturnUrl = returnUrl;
 
             if (TempData.ContainsKey("RegistrationSuccess"))
                 ViewBag.RegistrationSucceeded = TempData["RegistrationSuccess"];
 
-            return View();
+            return View(model);
         }
+
 
         // ======================
         // LOGIN (POST)
@@ -115,6 +124,23 @@ namespace RoomCast.Controllers
 
             if (result.Succeeded)
             {
+                // Save email in cookie IF Remember Me is checked
+                if (model.RememberMe)
+                {
+                    Response.Cookies.Append("RememberedEmail", model.Email, new CookieOptions
+                    {
+                        Expires = DateTime.UtcNow.AddDays(30),
+                        HttpOnly = false, // view needs to read this
+                        IsEssential = true
+                    });
+                }
+                else
+                {
+                    // Remove cookie if user didn't check Remember Me
+                    if (Request.Cookies.ContainsKey("RememberedEmail"))
+                        Response.Cookies.Delete("RememberedEmail");
+                }
+
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
 
@@ -128,6 +154,7 @@ namespace RoomCast.Controllers
 
             return View(model);
         }
+
 
         // ======================
         // LOGOUT

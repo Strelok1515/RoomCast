@@ -4,13 +4,15 @@ namespace RoomCast.Models.ViewModels
 {
     public class LoginViewModel
     {
-        [Required, EmailAddress]
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Invalid email address.")]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
+        [Required(ErrorMessage = "Password is required.")]
         [DataType(DataType.Password)]
         public string Password { get; set; } = string.Empty;
 
+        [Display(Name = "Remember Me")]
         public bool RememberMe { get; set; }
     }
 }
