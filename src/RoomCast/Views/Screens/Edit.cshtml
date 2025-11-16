@@ -1,48 +1,242 @@
 ﻿@model RoomCast.Models.Casting.Screen
-
 @{
     ViewData["Title"] = "Edit Screen";
 }
 
-<h1 class="text-2xl font-bold mb-6 text-slate-800">Edit Screen</h1>
+<style>
+    /* ===== RoomCast Edit Screen — Local Styles (fixed) ===== */
+    .rc-wrap {
+        max-width: 960px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+    }
 
-<form asp-action="Edit" method="post" class="space-y-6">
-    <input type="hidden" asp-for="ScreenId" />
+    .rc-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.06);
+        overflow: hidden;
+    }
 
-    <div>
-        <label asp-for="Name" class="block text-sm font-medium text-slate-700">Screen Name</label>
-        <input asp-for="Name" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
-        <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
-    </div>
+    .rc-head {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eef2f7;
+        background: radial-gradient(1200px 1200px at 0% 0%, rgba(79,70,229,.06), transparent 60%), radial-gradient(1200px 1200px at 100% 0%, rgba(16,185,129,.05), transparent 60%);
+    }
 
-    <div>
-        <label asp-for="Location" class="block text-sm font-medium text-slate-700">Screen Location</label>
-        <input asp-for="Location" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500" />
-        <span asp-validation-for="Location" class="text-red-500 text-sm"></span>
-    </div>
+        .rc-head .rc-icon {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #22c55e);
+            color: #fff;
+            box-shadow: 0 8px 20px rgba(99,102,241,.28);
+        }
 
-    <div>
-        <label asp-for="Description" class="block text-sm font-medium text-slate-700">Screen Description</label>
-        <textarea asp-for="Description" rows="4" class="mt-1 block w-full border rounded-md px-3 py-2 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-        <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
-    </div>
+    .rc-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #111827;
+        letter-spacing: .2px;
+    }
 
-    
-        <div class="flex justify-end gap-4 mt-6">
-            <!-- Cancel Button -->
-            <a asp-action="Index"
-               class="bg-gray-500 text-white font-semibold border border-gray-600 px-4 py-2 rounded hover:bg-gray-600 transition duration-200">
-                Cancel
-            </a>
+    .rc-sub {
+        color: #6b7280;
+        font-size: .925rem;
+    }
 
-            <!-- Update Button -->
-            <button type="submit"
-                    class="bg-indigo-600 text-white font-semibold border border-indigo-700 px-4 py-2 rounded hover:bg-indigo-700 transition duration-200">
-                Update Screen
-            </button>
+    .rc-body {
+        padding: 1.25rem 1.5rem 1rem;
+    }
+
+    .rc-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    /* IMPORTANT: escape Razor at-rules in CSS */
+    @@media (min-width: 768px) {
+        .rc-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .rc-field {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .rc-label {
+        font-weight: 600;
+        color: #334155;
+        font-size: .92rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .rc-hint {
+        font-size: .8rem;
+        color: #94a3b8;
+    }
+
+    .rc-input, .rc-textarea {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: .75rem;
+        padding: .8rem .95rem;
+        font-size: .96rem;
+        color: #0f172a;
+        background: #fff;
+        transition: all .2s ease;
+        outline: none;
+        box-shadow: 0 1px 0 rgba(2,6,23,.02) inset;
+    }
+
+        .rc-input:focus, .rc-textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,.12);
+        }
+
+    .rc-textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .field-validation-error {
+        color: #dc2626;
+        font-size: .82rem;
+    }
+
+    .rc-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding: 1rem 1.5rem 1.25rem;
+        border-top: 1px solid #eef2f7;
+        background: #fbfdff;
+    }
+
+    .rc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .55rem;
+        border-radius: .75rem;
+        padding: .7rem 1.05rem;
+        font-weight: 600;
+        font-size: .95rem;
+        border: 1px solid transparent;
+        transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, border-color .2s ease, color .2s ease;
+        user-select: none;
+    }
+
+        .rc-btn:active {
+            transform: translateY(1px);
+        }
+
+    .rc-btn-primary {
+        background: linear-gradient(135deg,#6366f1,#4f46e5);
+        color: #fff;
+        box-shadow: 0 8px 20px rgba(99,102,241,.25);
+    }
+
+        .rc-btn-primary:hover {
+            filter: brightness(1.04);
+            box-shadow: 0 10px 24px rgba(99,102,241,.32);
+        }
+
+    .rc-btn-secondary {
+        background: #ffffff;
+        color: #334155;
+        border-color: #e5e7eb;
+    }
+
+        .rc-btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #d1d5db;
+        }
+
+    .rc-icon-btn {
+        font-size: 1.05rem;
+    }
+
+    .rc-divider {
+        height: 1px;
+        background: #eef2f7;
+        margin: .25rem 0 0;
+    }
+</style>
+
+<div class="rc-wrap">
+    <div class="rc-card">
+        <div class="rc-head">
+            <div class="rc-icon"><i class="bi bi-pencil-square"></i></div>
+            <div>
+                <div class="rc-title">Edit Screen</div>
+                <div class="rc-sub">Update screen details and keep your displays organized.</div>
+            </div>
         </div>
 
-    </>
+        <div class="rc-body">
+            <div asp-validation-summary="ModelOnly" class="text-red-600 mb-3"></div>
+        </div>
 
-    
-</form>
+        <div class="rc-divider"></div>
+
+        <form asp-action="Edit" class="rc-body">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="ScreenId" />
+
+            <div class="rc-grid">
+                <div class="rc-field">
+                    <label asp-for="Name" class="rc-label">
+                        <i class="bi bi-display"></i> Screen Name
+                    </label>
+                    <input asp-for="Name" class="rc-input" placeholder="e.g., Room1, Lobby TV, Lab A" />
+                    <span class="rc-hint">This label appears anywhere the screen is listed.</span>
+                    <span asp-validation-for="Name" class="field-validation-error"></span>
+                </div>
+
+                <div class="rc-field">
+                    <label asp-for="Location" class="rc-label">
+                        <i class="bi bi-geo-alt"></i> Location
+                    </label>
+                    <input asp-for="Location" class="rc-input" placeholder="e.g., D320, Reception, Level 1" />
+                    <span class="rc-hint">Optional. Helps you and teammates find the screen quickly.</span>
+                    <span asp-validation-for="Location" class="field-validation-error"></span>
+                </div>
+            </div>
+
+            <div class="rc-field" style="margin-top:.5rem;">
+                <label asp-for="Description" class="rc-label">
+                    <i class="bi bi-card-text"></i> Description
+                </label>
+                <textarea asp-for="Description" class="rc-textarea" placeholder="Add any notes about device purpose, type, or placement."></textarea>
+                <span asp-validation-for="Description" class="field-validation-error"></span>
+            </div>
+
+            <div class="rc-actions">
+                <button type="submit" class="rc-btn rc-btn-primary">
+                    <i class="bi bi-save rc-icon-btn"></i> Save Changes
+                </button>
+
+                <a href="@Url.Action("Index", "Screens")" class="rc-btn rc-btn-secondary">
+                    <i class="bi bi-arrow-left rc-icon-btn"></i> Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

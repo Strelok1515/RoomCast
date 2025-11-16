@@ -1,40 +1,208 @@
 ﻿@model RoomCast.Models.Casting.Screen
-
 @{
     ViewData["Title"] = "Create Screen";
-    Layout = "_Layout";
 }
 
-<h1 class="text-3xl font-bold mb-6 text-slate-800">Add New Screen</h1>
+<style>
+    /* =======================
+           RoomCast — Create Screen UI (Razor-safe CSS)
+           ======================= */
 
-<form asp-action="Create" method="post" class="max-w-2xl bg-white p-6 rounded shadow-md">
-    @Html.AntiForgeryToken()
+    .rc-wrap {
+        max-width: 960px;
+        margin: 3rem auto;
+        padding: 0 1rem;
+    }
 
-    <div asp-validation-summary="All" class="text-red-600 mb-4"></div>
+    .rc-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.06);
+        overflow: hidden;
+    }
 
-    <div class="mb-4">
-        <label asp-for="Name" class="block text-sm font-medium text-gray-700">Screen Name</label>
-        <input asp-for="Name" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-        <span asp-validation-for="Name" class="text-sm text-red-600"></span>
+    .rc-head {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #eef2f7;
+        background: radial-gradient(1200px 1200px at 0% 0%, rgba(79,70,229,.06), transparent 60%), radial-gradient(1200px 1200px at 100% 0%, rgba(16,185,129,.05), transparent 60%);
+    }
+
+    .rc-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        color: #fff;
+        background: linear-gradient(135deg,#6366f1,#22c55e);
+        box-shadow: 0 8px 18px rgba(99,102,241,.25);
+    }
+
+    .rc-title {
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .rc-sub {
+        font-size: .93rem;
+        color: #6b7280;
+    }
+
+    .rc-body {
+        padding: 1.25rem 1.5rem;
+    }
+
+    .rc-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    /* Razor-safe media query */
+    @@media (min-width:768px) {
+        .rc-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+    }
+
+    .rc-field {
+        display: flex;
+        flex-direction: column;
+        gap: .4rem;
+    }
+
+    .rc-label {
+        font-weight: 600;
+        color: #334155;
+        font-size: .95rem;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .rc-input, .rc-textarea {
+        width: 100%;
+        border: 1px solid #e5e7eb;
+        border-radius: .75rem;
+        padding: .8rem .95rem;
+        background: #fff;
+        font-size: .96rem;
+        color: #0f172a;
+        transition: .2s ease;
+    }
+
+        .rc-input:focus, .rc-textarea:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99,102,241,.13);
+        }
+
+    .rc-textarea {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .rc-actions {
+        padding: 1rem 1.5rem;
+        display: flex;
+        gap: .75rem;
+        border-top: 1px solid #eef2f7;
+        background: #fbfdff;
+    }
+
+    .rc-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .7rem 1.05rem;
+        font-size: .95rem;
+        font-weight: 600;
+        border-radius: .75rem;
+        transition: .2s ease;
+    }
+
+    .rc-btn-primary {
+        background: linear-gradient(135deg,#4f46e5,#6366f1);
+        color: #fff;
+        box-shadow: 0 8px 18px rgba(79,70,229,.25);
+    }
+
+        .rc-btn-primary:hover {
+            filter: brightness(1.06);
+        }
+
+    .rc-btn-secondary {
+        border: 1px solid #e5e7eb;
+        background: #fff;
+        color: #475569;
+    }
+
+        .rc-btn-secondary:hover {
+            background: #f8fafc;
+            border-color: #d1d5db;
+        }
+</style>
+
+<div class="rc-wrap">
+    <div class="rc-card">
+
+        <!-- Header -->
+        <div class="rc-head">
+            <div class="rc-icon">
+                <i class="bi bi-plus-lg"></i>
+            </div>
+            <div>
+                <div class="rc-title">Add New Screen</div>
+                <div class="rc-sub">Create a new display screen to assign media or albums.</div>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <form asp-action="Create" class="rc-body">
+            @Html.AntiForgeryToken()
+
+            <div class="rc-grid">
+                <div class="rc-field">
+                    <label asp-for="Name" class="rc-label">
+                        <i class="bi bi-display"></i> Screen Name
+                    </label>
+                    <input asp-for="Name" class="rc-input" />
+                    <span asp-validation-for="Name" class="text-red-500 text-sm"></span>
+                </div>
+
+                <div class="rc-field">
+                    <label asp-for="Location" class="rc-label">
+                        <i class="bi bi-geo-alt"></i> Location
+                    </label>
+                    <input asp-for="Location" class="rc-input" />
+                    <span asp-validation-for="Location" class="text-red-500 text-sm"></span>
+                </div>
+            </div>
+
+            <div class="rc-field" style="margin-top:.5rem;">
+                <label asp-for="Description" class="rc-label">
+                    <i class="bi bi-card-text"></i> Description
+                </label>
+                <textarea asp-for="Description" class="rc-textarea"></textarea>
+                <span asp-validation-for="Description" class="text-red-500 text-sm"></span>
+            </div>
+
+            <div class="rc-actions">
+                <button type="submit" class="rc-btn rc-btn-primary">
+                    <i class="bi bi-save2"></i> Create Screen
+                </button>
+
+                <a href="@Url.Action("Index", "Screens")"
+                   class="rc-btn rc-btn-secondary">
+                    <i class="bi bi-arrow-left"></i> Cancel
+                </a>
+            </div>
+        </form>
     </div>
-
-    <div class="mb-4">
-        <label asp-for="Location" class="block text-sm font-medium text-gray-700">Location</label>
-        <input asp-for="Location" class="form-input mt-1 block w-full rounded-md border-gray-300 shadow-sm" />
-        <span asp-validation-for="Location" class="text-sm text-red-600"></span>
-    </div>
-
-    <div class="mb-6">
-        <label asp-for="Description" class="block text-sm font-medium text-gray-700">Description</label>
-        <textarea asp-for="Description" rows="4" class="form-textarea mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
-        <span asp-validation-for="Description" class="text-sm text-red-600"></span>
-    </div>
-
-    <div class="flex justify-end space-x-4">
-        <a asp-action="Index" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">Cancel</a>
-        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md">Save</button>
-    </div>
-</form>
+</div>
 
 @section Scripts {
     @{

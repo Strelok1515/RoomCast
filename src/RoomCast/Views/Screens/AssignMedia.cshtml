@@ -1,54 +1,133 @@
-﻿@using RoomCast.ViewModels
-@model ScreenAssignmentViewModel
+﻿@model RoomCast.ViewModels.ScreenAssignmentViewModel
+@using RoomCast.Models
 
 @{
-    ViewData["Title"] = "Assign Media";
-    Layout = "_Layout";
+    ViewData["Title"] = "Assign Media Files";
 }
 
-<div class="max-w-3xl mx-auto bg-white p-8 shadow-md rounded-lg mt-6">
-    <h2 class="text-2xl font-bold mb-4 text-slate-800">
-        Assign Media Files to
-        <span class="text-indigo-600 font-semibold">@Model.ScreenName</span>
-    </h2>
+<div class="mb-6 flex items-center justify-between">
+    <h1 class="text-3xl font-bold text-slate-800">
+        Assign Media to <span class="text-indigo-600">@Model.ScreenName</span>
+    </h1>
 
-    <form asp-action="AssignMedia" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="ScreenId" />
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            @foreach (var media in Model.AllMediaFiles)
-            {
-                <div class="flex items-center space-x-2 bg-gray-50 p-2 rounded">
-                    <input type="checkbox"
-                           name="SelectedMediaIds"
-                           value="@media.FileId"
-                           id="media-@media.FileId"
-                           class="h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                    @(Model.SelectedMediaIds.Contains(media.FileId) ? "checked" : "") />
-                    <label for="media-@media.FileId" class="text-slate-700">
-                        @media.Title (@media.FileType)
-                    </label>
-                </div>
-            }
-        </div>
-
-        <div class="flex justify-end space-x-4 mt-6">
-            <a asp-action="Index"
-               class="inline-block bg-gray-500 text-white font-semibold px-4 py-2 rounded hover:bg-gray-600 transition duration-200">
-                Cancel
-            </a>
-            <button type="submit"
-                    class="inline-block bg-indigo-600 text-white font-semibold px-4 py-2 rounded hover:bg-indigo-700 transition duration-200">
-                Assign Media
-            </button>
-        </div>
-
-
-
-    </form>
+    <a asp-action="Index" asp-controller="Screens"
+       class="px-4 py-2 rounded-md bg-slate-200 text-slate-800 hover:bg-slate-300 transition text-sm">
+        ← Back to Screens
+    </a>
 </div>
 
+<form id="mediaForm" asp-action="AssignMedia" method="post">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="ScreenId" value="@Model.ScreenId" />
+
+    <div id="selectedFileContainer"></div>
+
+    <div id="mediaGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+
+        @foreach (var file in Model.AllMediaFiles)
+        {
+            bool preselected = Model.SelectedMediaIds.Contains(file.FileId);
+            bool isImage = file.FileType == "Picture";
+            bool isVideo = file.FileType == "Video";
+            bool isDoc = file.FileType == "Document";
+
+            <div class="media-item cursor-pointer rounded-xl bg-white shadow border border-gray-200 hover:shadow-lg transition relative"
+                 data-file-id="@file.FileId"
+                 data-preselected="@(preselected.ToString().ToLower())">
+
+                <div class="absolute top-3 right-3 selection-icon hidden bg-indigo-600 h-8 w-8 rounded-full
+                                items-center justify-center shadow text-white">
+                    <i class="bi bi-check-lg text-lg"></i>
+                </div>
+
+                <div class="h-48 w-full overflow-hidden rounded-t-xl bg-slate-100 flex items-center justify-center">
+                    @if (isImage)
+                    {
+                        <img src="@file.FilePath" class="w-full h-full object-cover" />
+                    }
+                    else if (isVideo)
+                    {
+                        <video class="w-full h-full object-cover" muted preload="metadata">
+                            <source src="@file.FilePath" />
+                        </video>
+                    }
+                    else if (isDoc)
+                    {
+                        <div class="flex flex-col items-center text-slate-500">
+                            <i class="bi bi-file-earmark-text text-5xl"></i>
+                            <span class="text-xs mt-1">@file.FileFormat?.ToUpper()</span>
+                        </div>
+                    }
+                </div>
+
+                <div class="p-4">
+                    <p class="font-semibold text-slate-800 truncate">@file.Title</p>
+                    <p class="text-xs uppercase text-slate-500">@file.FileType</p>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="mt-10 flex justify-end">
+        <button type="submit"
+                class="px-6 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-500 transition">
+            Assign Media
+        </button>
+    </div>
+</form>
+
+
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+    <script>
+        window.addEventListener("DOMContentLoaded", () => {
+
+            const grid = document.getElementById("mediaGrid");
+            const container = document.getElementById("selectedFileContainer");
+            const selected = new Set();
+
+            // Preselect items
+            document.querySelectorAll(".media-item").forEach(card => {
+                if (card.dataset.preselected === "true") {
+                    selected.add(card.dataset.fileId);
+                    card.classList.add("ring-2", "ring-indigo-300", "border-indigo-600");
+                    card.querySelector(".selection-icon").classList.remove("hidden");
+                    card.querySelector(".selection-icon").classList.add("flex");
+                }
+            });
+
+            function updateHiddenInputs() {
+                container.innerHTML = "";
+                selected.forEach(id => {
+                    const input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "SelectedMediaIds";
+                    input.value = id;
+                    container.appendChild(input);
+                });
+            }
+            updateHiddenInputs();
+
+            grid.addEventListener("click", e => {
+                const card = e.target.closest(".media-item");
+                if (!card) return;
+
+                const id = card.dataset.fileId;
+
+                if (selected.has(id)) {
+                    selected.delete(id);
+                    card.classList.remove("ring-2", "ring-indigo-300", "border-indigo-600");
+                    card.querySelector(".selection-icon").classList.add("hidden");
+                    card.querySelector(".selection-icon").classList.remove("flex");
+                } else {
+                    selected.add(id);
+                    card.classList.add("ring-2", "ring-indigo-300", "border-indigo-600");
+                    card.querySelector(".selection-icon").classList.remove("hidden");
+                    card.querySelector(".selection-icon").classList.add("flex");
+                }
+
+                updateHiddenInputs();
+            });
+
+        });
+    </script>
 }

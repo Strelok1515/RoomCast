@@ -46,6 +46,7 @@ namespace RoomCast.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(screen);
         }
 
@@ -54,6 +55,7 @@ namespace RoomCast.Controllers
         {
             var screen = await _context.Screens.FindAsync(id);
             if (screen == null) return NotFound();
+
             return View(screen);
         }
 
@@ -70,6 +72,7 @@ namespace RoomCast.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             return View(screen);
         }
 
@@ -78,7 +81,8 @@ namespace RoomCast.Controllers
         {
             var screen = await _context.Screens.FindAsync(id);
             if (screen == null) return NotFound();
-            return View(screen); // Looks for Views/Screens/Delete.cshtml
+
+            return View(screen);
         }
 
         // POST: Screens/Delete/{id}
@@ -92,10 +96,9 @@ namespace RoomCast.Controllers
                 _context.Screens.Remove(screen);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction(nameof(Index));
         }
-
-        
 
         // GET: Screens/AssignMedia/{id}
         public async Task<IActionResult> AssignMedia(Guid id)
@@ -105,7 +108,7 @@ namespace RoomCast.Controllers
 
             var assignedMediaIds = await _context.ScreenMediaAssignments
                 .Where(x => x.ScreenId == id)
-                .Select(x => x.MediaFileId)
+                .Select(x => x.MediaFileId)  // MUST USE MediaFileId
                 .ToListAsync();
 
             var viewModel = new ScreenAssignmentViewModel
@@ -132,22 +135,42 @@ namespace RoomCast.Controllers
 
             var existingAssignments = _context.ScreenMediaAssignments
                 .Where(x => x.ScreenId == model.ScreenId);
+
             _context.ScreenMediaAssignments.RemoveRange(existingAssignments);
 
             if (model.SelectedMediaIds != null && model.SelectedMediaIds.Any())
             {
-                foreach (var fileId in model.SelectedMediaIds)
+                foreach (int fileId in model.SelectedMediaIds)
                 {
                     _context.ScreenMediaAssignments.Add(new ScreenMediaAssignment
                     {
                         ScreenId = model.ScreenId,
-                        MediaFileId = fileId
+                        MediaFileId = fileId   // MUST USE CORRECT PROPERTY
                     });
                 }
             }
 
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
+        }
+
+        // GET: Screens/Details/{id}
+        public async Task<IActionResult> Details(Guid id)
+        {
+            if (id == Guid.Empty)
+                return NotFound();
+
+            var screen = await _context.Screens
+                .Include(s => s.ScreenMediaAssignments)
+                    .ThenInclude(sma => sma.MediaFile)
+                .Include(s => s.AlbumScreenAssignments)
+                    .ThenInclude(asa => asa.Album)
+                .FirstOrDefaultAsync(s => s.ScreenId == id);
+
+            if (screen == null)
+                return NotFound();
+
+            return View(screen);
         }
 
         // GET: Screens/ScreenDisplay/{screenId}
