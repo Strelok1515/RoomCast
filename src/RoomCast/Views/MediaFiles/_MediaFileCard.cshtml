@@ -49,26 +49,19 @@
         : null;
 }
 
-<div class="relative flex h-full cursor-pointer flex-col rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+<div class="relative flex h-full flex-col rounded-2xl bg-white shadow-sm ring-1 ring-slate-200/70 transition duration-200 ease-out hover:-translate-y-1 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
      data-media-card
      data-media-id="@Model.FileId"
      data-media-type="@normalizedType"
      data-media-title="@Model.Title"
      data-media-src="@(isImage || isVideo ? Model.FilePath : null)"
-     data-media-content-type="@(isVideo ? videoContentType : null)"
+     data-media-content-type="@(isVideo? videoContentType : null)"
      data-media-duration="@(Model.DurationSeconds?.ToString(CultureInfo.InvariantCulture))"
-     data-media-size="@(Model.FileSize > 0 ? Model.FileSize.ToString(CultureInfo.InvariantCulture) : null)"
+     data-media-size="@(Model.FileSize.ToString())"
      data-media-poster="@(isVideo && !string.IsNullOrWhiteSpace(Model.ThumbnailPath) ? Model.ThumbnailPath : null)"
      data-media-preview-url="@previewUrl"
-     data-media-document-src="@(isDocument && (isPdfDocument || isPlainTextDocument) ? Model.FilePath : null)"
-     data-media-document-kind="@(isDocument ? (isPdfDocument ? "pdf" : (isPlainTextDocument ? "text" : "document")) : null)"
-     tabindex="0"
-     role="group"
-     aria-selected="false">
-    <div class="pointer-events-none absolute right-4 top-4 z-10 hidden h-9 w-9 items-center justify-center rounded-full border-2 border-white bg-indigo-500 text-white shadow-lg"
-         data-selection-indicator>
-        <i class="bi bi-check-lg text-lg"></i>
-    </div>
+     data-media-document-src="@(isDocument? Model.FilePath: null)"
+     data-media-document-kind="@(isDocument ? (isPdfDocument ? "pdf" : "document") : null)">
     <div class="px-5 pt-5">
         <div class="flex items-start gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-full bg-indigo-50 text-indigo-600">
