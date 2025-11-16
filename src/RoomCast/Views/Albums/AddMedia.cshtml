@@ -13,9 +13,9 @@
 
 <a asp-action="Index"
    class="inline-flex items-center text-sm text-slate-600 hover:text-slate-800 mb-6">
-    <i class="bi bi-arrow-left me-1"></i> Back to Albums
-    <br />
+    <i class="bi bi-arrow-left me-1"></i> Back to Albums 
 </a>
+
 
 <form asp-action="AddMedia" method="post" id="mediaForm">
     @Html.AntiForgeryToken()
@@ -73,6 +73,7 @@
         }
 
     </div>
+    <br />
 
     <!-- Add spacing before the button -->
     <div class="mt-10 flex justify-end">
