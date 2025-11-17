@@ -19,6 +19,6 @@ namespace RoomCast.Models.Casting
         public Screen Screen { get; set; }
 
         // Optional: AssignedAt timestamp
-        public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? AssignedAt { get; set; } = DateTime.UtcNow;
     }
 }

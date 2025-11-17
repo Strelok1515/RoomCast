@@ -203,7 +203,7 @@ namespace RoomCast.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime?>("Date")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -279,7 +279,7 @@ namespace RoomCast.Migrations
                     b.Property<int>("AlbumId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("AssignedAt")
+                    b.Property<DateTime?>("AssignedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("ScreenId")
@@ -292,6 +292,26 @@ namespace RoomCast.Migrations
                     b.HasIndex("ScreenId");
 
                     b.ToTable("AlbumScreenAssignments");
+                });
+
+            modelBuilder.Entity("RoomCast.Models.Casting.CastingAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("CurrentScreenId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CastingAssignments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1
+                        });
                 });
 
             modelBuilder.Entity("RoomCast.Models.Casting.Screen", b =>

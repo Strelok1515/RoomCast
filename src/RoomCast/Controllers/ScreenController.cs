@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using RoomCast.Data;
+using RoomCast.Models;
 using RoomCast.Models.Casting;
 using RoomCast.ViewModels;
 
@@ -15,77 +17,73 @@ namespace RoomCast.Controllers
             _context = context;
         }
 
-        // GET: Screens
+        // ---------------------------------------------------------
+        // LIST SCREENS
+        // ---------------------------------------------------------
         public async Task<IActionResult> Index()
         {
             var screens = await _context.Screens
-                .Include(s => s.ScreenMediaAssignments)
-                    .ThenInclude(sma => sma.MediaFile)
-                .Include(s => s.AlbumScreenAssignments)
-                    .ThenInclude(asa => asa.Album)
+                .Include(s => s.ScreenMediaAssignments).ThenInclude(m => m.MediaFile)
+                .Include(s => s.AlbumScreenAssignments).ThenInclude(a => a.Album)
                 .ToListAsync();
 
             return View(screens);
         }
 
-        // GET: Screens/Create
-        public IActionResult Create()
-        {
-            return View();
-        }
+        // ---------------------------------------------------------
+        // CREATE
+        // ---------------------------------------------------------
+        public IActionResult Create() => View();
 
-        // POST: Screens/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Screen screen)
         {
-            if (ModelState.IsValid)
-            {
-                screen.ScreenId = Guid.NewGuid();
-                _context.Screens.Add(screen);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            if (!ModelState.IsValid)
+                return View(screen);
 
-            return View(screen);
+            screen.ScreenId = Guid.NewGuid();
+            _context.Screens.Add(screen);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Screens/Edit/{id}
+        // ---------------------------------------------------------
+        // EDIT
+        // ---------------------------------------------------------
         public async Task<IActionResult> Edit(Guid id)
         {
             var screen = await _context.Screens.FindAsync(id);
             if (screen == null) return NotFound();
-
             return View(screen);
         }
 
-        // POST: Screens/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(Guid id, Screen screen)
         {
-            if (id != screen.ScreenId) return NotFound();
+            if (id != screen.ScreenId)
+                return NotFound();
 
-            if (ModelState.IsValid)
-            {
-                _context.Update(screen);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
-            }
+            if (!ModelState.IsValid)
+                return View(screen);
 
-            return View(screen);
+            _context.Update(screen);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
 
-        // GET: Screens/Delete/{id}
+        // ---------------------------------------------------------
+        // DELETE
+        // ---------------------------------------------------------
         public async Task<IActionResult> Delete(Guid id)
         {
             var screen = await _context.Screens.FindAsync(id);
             if (screen == null) return NotFound();
-
             return View(screen);
         }
 
-        // POST: Screens/Delete/{id}
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(Guid id)
@@ -96,33 +94,36 @@ namespace RoomCast.Controllers
                 _context.Screens.Remove(screen);
                 await _context.SaveChangesAsync();
             }
-
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Screens/AssignMedia/{id}
+        // ---------------------------------------------------------
+        // ASSIGN MEDIA (GET)
+        // ---------------------------------------------------------
         public async Task<IActionResult> AssignMedia(Guid id)
         {
             var screen = await _context.Screens.FindAsync(id);
             if (screen == null) return NotFound();
 
-            var assignedMediaIds = await _context.ScreenMediaAssignments
+            var assignedMedia = await _context.ScreenMediaAssignments
                 .Where(x => x.ScreenId == id)
-                .Select(x => x.MediaFileId)  // MUST USE MediaFileId
+                .Select(x => x.MediaFileId)
                 .ToListAsync();
 
-            var viewModel = new ScreenAssignmentViewModel
+            var vm = new ScreenAssignmentViewModel
             {
-                ScreenId = screen.ScreenId,
+                ScreenId = id,
                 ScreenName = screen.Name,
                 AllMediaFiles = await _context.MediaFiles.ToListAsync(),
-                SelectedMediaIds = assignedMediaIds
+                SelectedMediaIds = assignedMedia
             };
 
-            return View(viewModel);
+            return View(vm);
         }
 
-        // POST: Screens/AssignMedia
+        // ---------------------------------------------------------
+        // ASSIGN MEDIA (POST)
+        // ---------------------------------------------------------
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AssignMedia(ScreenAssignmentViewModel model)
@@ -133,19 +134,19 @@ namespace RoomCast.Controllers
                 return View(model);
             }
 
-            var existingAssignments = _context.ScreenMediaAssignments
+            var removeOld = _context.ScreenMediaAssignments
                 .Where(x => x.ScreenId == model.ScreenId);
 
-            _context.ScreenMediaAssignments.RemoveRange(existingAssignments);
+            _context.RemoveRange(removeOld);
 
-            if (model.SelectedMediaIds != null && model.SelectedMediaIds.Any())
+            if (model.SelectedMediaIds != null)
             {
-                foreach (int fileId in model.SelectedMediaIds)
+                foreach (var id in model.SelectedMediaIds)
                 {
                     _context.ScreenMediaAssignments.Add(new ScreenMediaAssignment
                     {
                         ScreenId = model.ScreenId,
-                        MediaFileId = fileId   // MUST USE CORRECT PROPERTY
+                        MediaFileId = id
                     });
                 }
             }
@@ -154,53 +155,33 @@ namespace RoomCast.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        // GET: Screens/Details/{id}
-        public async Task<IActionResult> Details(Guid id)
-        {
-            if (id == Guid.Empty)
-                return NotFound();
-
-            var screen = await _context.Screens
-                .Include(s => s.ScreenMediaAssignments)
-                    .ThenInclude(sma => sma.MediaFile)
-                .Include(s => s.AlbumScreenAssignments)
-                    .ThenInclude(asa => asa.Album)
-                .FirstOrDefaultAsync(s => s.ScreenId == id);
-
-            if (screen == null)
-                return NotFound();
-
-            return View(screen);
-        }
-
-        // GET: Screens/ScreenDisplay/{screenId}
-        [Route("Screens/ScreenDisplay/{screenId}")]
+        // ---------------------------------------------------------
+        // KIOSK DISPLAY (ELECTRON CLIENT)
+        // ---------------------------------------------------------
+        [AllowAnonymous]
         public async Task<IActionResult> ScreenDisplay(Guid screenId)
         {
             var screen = await _context.Screens
-                .Include(s => s.ScreenMediaAssignments)
-                    .ThenInclude(sma => sma.MediaFile)
-                .Include(s => s.AlbumScreenAssignments)
-                    .ThenInclude(asa => asa.Album)
+                .Include(s => s.ScreenMediaAssignments).ThenInclude(f => f.MediaFile)
+                .Include(s => s.AlbumScreenAssignments).ThenInclude(a => a.Album)
                 .FirstOrDefaultAsync(s => s.ScreenId == screenId);
 
             if (screen == null)
-                return NotFound();
+                return Content("Screen not found");
 
-            var viewModel = new ScreenDisplayViewModel
+            var vm = new ScreenDisplayViewModel
             {
                 ScreenName = screen.Name,
                 AssignedMediaFiles = screen.ScreenMediaAssignments
-                    .Select(sma => sma.MediaFile)
-                    .Where(m => m != null)
-                    .ToList(),
+                    .Select(x => x.MediaFile).ToList(),
                 AssignedAlbums = screen.AlbumScreenAssignments
-                    .Select(asa => asa.Album)
-                    .Where(a => a != null)
-                    .ToList()
+                    .Select(x => x.Album).ToList()
             };
 
-            return View(viewModel);
+            return View(vm);
         }
+
+
+        
     }
 }

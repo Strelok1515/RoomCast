@@ -11,8 +11,8 @@ using RoomCast.Data;
 namespace RoomCast.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251028070637_AddScreenAndAssignments")]
-    partial class AddScreenAndAssignments
+    [Migration("20251116220711_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -156,7 +156,7 @@ namespace RoomCast.Migrations
 
                     b.Property<string>("AlbumName")
                         .IsRequired()
-                        .HasMaxLength(255)
+                        .HasMaxLength(100)
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("Timestamp")
@@ -167,6 +167,8 @@ namespace RoomCast.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("AlbumId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Albums");
                 });
@@ -204,7 +206,7 @@ namespace RoomCast.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime>("Date")
+                    b.Property<DateTime?>("Date")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Email")
@@ -271,20 +273,67 @@ namespace RoomCast.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("RoomCast.Models.Casting.Screen", b =>
+            modelBuilder.Entity("RoomCast.Models.Casting.AlbumScreenAssignment", b =>
                 {
-                    b.Property<int>("ScreenId")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("AuthToken")
-                        .IsRequired()
+                    b.Property<int>("AlbumId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime?>("AssignedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("ScreenId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AlbumId");
+
+                    b.HasIndex("ScreenId");
+
+                    b.ToTable("AlbumScreenAssignments");
+                });
+
+            modelBuilder.Entity("RoomCast.Models.Casting.CastingAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<Guid?>("CurrentScreenId")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("CastingAssignments");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1
+                        });
+                });
+
+            modelBuilder.Entity("RoomCast.Models.Casting.Screen", b =>
+                {
+                    b.Property<Guid>("ScreenId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Location")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("ScreenName")
+                    b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
@@ -293,20 +342,17 @@ namespace RoomCast.Migrations
                     b.ToTable("Screens");
                 });
 
-            modelBuilder.Entity("RoomCast.Models.Core.ScreenMediaAssignment", b =>
+            modelBuilder.Entity("RoomCast.Models.Casting.ScreenMediaAssignment", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("MediaFileId")
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("ScreenId")
-                        .HasColumnType("INTEGER");
+                    b.Property<Guid>("ScreenId")
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
@@ -436,6 +482,17 @@ namespace RoomCast.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("RoomCast.Models.Album", b =>
+                {
+                    b.HasOne("RoomCast.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("RoomCast.Models.AlbumFile", b =>
                 {
                     b.HasOne("RoomCast.Models.Album", "Album")
@@ -455,7 +512,26 @@ namespace RoomCast.Migrations
                     b.Navigation("MediaFile");
                 });
 
-            modelBuilder.Entity("RoomCast.Models.Core.ScreenMediaAssignment", b =>
+            modelBuilder.Entity("RoomCast.Models.Casting.AlbumScreenAssignment", b =>
+                {
+                    b.HasOne("RoomCast.Models.Album", "Album")
+                        .WithMany()
+                        .HasForeignKey("AlbumId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("RoomCast.Models.Casting.Screen", "Screen")
+                        .WithMany("AlbumScreenAssignments")
+                        .HasForeignKey("ScreenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Album");
+
+                    b.Navigation("Screen");
+                });
+
+            modelBuilder.Entity("RoomCast.Models.Casting.ScreenMediaAssignment", b =>
                 {
                     b.HasOne("RoomCast.Models.MediaFile", "MediaFile")
                         .WithMany()
@@ -481,6 +557,8 @@ namespace RoomCast.Migrations
 
             modelBuilder.Entity("RoomCast.Models.Casting.Screen", b =>
                 {
+                    b.Navigation("AlbumScreenAssignments");
+
                     b.Navigation("ScreenMediaAssignments");
                 });
 #pragma warning restore 612, 618

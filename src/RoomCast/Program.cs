@@ -1,80 +1,60 @@
-﻿using System;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.StaticFiles;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using RoomCast.Data;
 using RoomCast.Models;
-using RoomCast.Options;
 using RoomCast.Services.MediaPreview;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add DB context for SQLite
+// FORCE DEVELOPMENT
+Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
+
+// FORCE PORT 7058
+builder.WebHost.UseUrls("http://0.0.0.0:7058");
+
+
+// FIX DB PATH (THIS IS YOUR REAL DB)
+var dbPath = @"C:\Users\ace_i\OneDrive\Desktop\RoomCast\src\RoomCast\app.db";
+
+// REGISTER EF + SQLITE
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlite("Data Source=app.db"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
-// Add Identity using ApplicationUser and EF Core
-builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-{
-    options.SignIn.RequireConfirmedAccount = false;
-    options.Password.RequiredLength = 8;
-    options.Password.RequireUppercase = false;
-    options.Password.RequireNonAlphanumeric = false;
-    options.Password.RequireDigit = true;
-})
-.AddEntityFrameworkStores<ApplicationDbContext>()
-.AddDefaultTokenProviders();
+// IDENTITY
+builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
+    .AddEntityFrameworkStores<ApplicationDbContext>()
+    .AddDefaultTokenProviders();
 
-// ✅ Configure the authentication cookie so "Remember Me" works
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Account/Login";
-    options.LogoutPath = "/Account/Logout";
     options.AccessDeniedPath = "/Account/Login";
-
-    // How long the persistent cookie should last
-    options.ExpireTimeSpan = TimeSpan.FromDays(30);
-
-    // Refresh the expiration time while the user is active
-    options.SlidingExpiration = true;
-
-    // Required so the cookie is always written
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
 });
 
-builder.Services.Configure<AuthenticationOptions>(
-    builder.Configuration.GetSection(AuthenticationOptions.SectionName));
-
-// Add MVC + Razor Pages
+// MVC + Razor
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 builder.Services.AddScoped<IMediaFilePreviewBuilder, MediaFilePreviewBuilder>();
 
 var app = builder.Build();
 
-// Ensure database schema exists at startup
+// AUTO CREATE DB & MIGRATE
 using (var scope = app.Services.CreateScope())
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    dbContext.Database.Migrate();
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();
 }
 
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Home/Error");
-    app.UseHsts();
-}
+// STATIC FILES
+app.UseStaticFiles();
 
-app.UseHttpsRedirection();
-
-var staticFileContentTypeProvider = new FileExtensionContentTypeProvider();
-staticFileContentTypeProvider.Mappings[".wasm"] = "application/wasm";
-
+// 🔥 FIX UPLOADS FOLDER WHEN RUNNING FROM PUBLISH
 app.UseStaticFiles(new StaticFileOptions
 {
-    ContentTypeProvider = staticFileContentTypeProvider
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(app.Environment.WebRootPath, "uploads")),
+    RequestPath = "/uploads"
 });
 
 app.UseRouting();
@@ -82,10 +62,17 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapRazorPages();
-app.MapControllers();
+
+// 🔥 FIX SCREEN DISPLAY ROUTE (IMPORTANT)
+app.MapControllerRoute(
+    name: "screen-display",
+    pattern: "Screens/ScreenDisplay/{screenId:guid}",
+    defaults: new { controller = "Screens", action = "ScreenDisplay" }
+);
+
+// DEFAULT ROUTE
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Account}/{action=Login}/{id?}");
 
 app.Run();
-

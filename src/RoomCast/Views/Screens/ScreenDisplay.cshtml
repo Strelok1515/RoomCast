@@ -1,59 +1,106 @@
 ﻿@model RoomCast.ViewModels.ScreenDisplayViewModel
 
 @{
-    Layout = null; // No layout for fullscreen display
-    ViewData["Title"] = "Screen Display";
+    Layout = null;
+    ViewData["Title"] = $"{Model.ScreenName} - Display";
 }
 
 <!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
-    <title>@Model.ScreenName - Media Display</title>
-    <meta http-equiv="refresh" content="60" /> <!-- Refresh every 60 seconds -->
+    <title>@Model.ScreenName - Display</title>
+
     <style>
         body {
-            background-color: black;
+            background: black;
             color: white;
             margin: 0;
             padding: 0;
-            font-family: sans-serif;
-        }
-        .media-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
             overflow: hidden;
+            font-family: Arial, sans-serif;
         }
+
+        .media-container {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         img, video, iframe {
-            max-width: 100%;
-            max-height: 90vh;
-            margin-bottom: 20px;
+            max-width: 100vw;
+            max-height: 100vh;
+            object-fit: contain;
         }
     </style>
 </head>
 <body>
+
     <div class="media-container">
+
+        @* =============================
+           SHOW MEDIA ASSIGNED DIRECTLY
+           ============================= *@
+
         @foreach (var media in Model.AssignedMediaFiles)
         {
-            if (media.FileType == "Image")
+            var path = Url.Content(media.FilePath);
+            var type = media.FileType?.ToLower() ?? "";
+            var ext = media.FileFormat?.ToLower() ?? "";
+
+            if (type == "picture" || type == "image"
+            || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".webp")
             {
-                <img src="@Url.Content(media.FilePath)" alt="@media.Title" />
+                <img src="@path" alt="@media.Title" />
             }
-            else if (media.FileType == "Video")
+            else if (type == "video" || ext == ".mp4" || ext == ".mov" || ext == ".mkv" || ext == ".avi")
             {
-                <video controls autoplay muted loop>
-                    <source src="@Url.Content(media.FilePath)" type="video/mp4" />
-                    Your browser does not support the video tag.
+                <video autoplay muted loop playsinline>
+                    <source src="@path" type="@media.ContentType" />
                 </video>
             }
-            else if (media.FileType == "PDF")
+            else if (ext == ".pdf")
             {
-                <iframe src="@Url.Content(media.FilePath)" width="90%" height="600px"></iframe>
+                <iframe src="@path" width="100%" height="100%"></iframe>
             }
         }
+
+
+        @* =============================
+           SHOW ALBUM MEDIA (IF ANY)
+           ============================= *@
+
+        @foreach (var album in Model.AssignedAlbums)
+        {
+            foreach (var albumMedia in album.AlbumFiles.Select(af => af.MediaFile))
+            {
+                if (albumMedia == null) continue;
+
+                var path = Url.Content(albumMedia.FilePath);
+                var type = albumMedia.FileType?.ToLower() ?? "";
+                var ext = albumMedia.FileFormat?.ToLower() ?? "";
+
+                if (type == "picture" || type == "image"
+                || ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".gif" || ext == ".webp")
+                {
+                    <img src="@path" alt="@albumMedia.Title" />
+                }
+                else if (type == "video" || ext == ".mp4" || ext == ".mov" || ext == ".mkv" || ext == ".avi")
+                {
+                    <video autoplay muted loop playsinline>
+                        <source src="@path" type="@albumMedia.ContentType" />
+                    </video>
+                }
+                else if (ext == ".pdf")
+                {
+                    <iframe src="@path" width="100%" height="100%"></iframe>
+                }
+            }
+        }
+
     </div>
+
 </body>
 </html>

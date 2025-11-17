@@ -5,7 +5,7 @@
 namespace RoomCast.Migrations
 {
     /// <inheritdoc />
-    public partial class AddAlbumUserLink : Migration
+    public partial class ResetDb : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using RoomCast.Models;
 using RoomCast.Models.Casting;
 
-
 namespace RoomCast.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
@@ -13,6 +12,7 @@ namespace RoomCast.Data
         {
         }
 
+        // ===== YOUR TABLES =====
         public DbSet<Album> Albums { get; set; }
         public DbSet<AlbumFile> AlbumFiles { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
@@ -20,25 +20,41 @@ namespace RoomCast.Data
         public DbSet<ScreenMediaAssignment> ScreenMediaAssignments { get; set; }
         public DbSet<AlbumScreenAssignment> AlbumScreenAssignments { get; set; }
 
+        // ===== NEW: Casting Assignment Table =====
+        public DbSet<CastingAssignment> CastingAssignments { get; set; }
 
-        // ✅ Add this override to define relationships
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Define relationship: Screen ↔ ScreenMediaAssignment (one-to-many)
+            // -----------------------------------------
+            // RELATIONSHIPS YOU ALREADY HAVE
+            // -----------------------------------------
+
             modelBuilder.Entity<ScreenMediaAssignment>()
                 .HasOne(s => s.Screen)
                 .WithMany(m => m.ScreenMediaAssignments)
                 .HasForeignKey(s => s.ScreenId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Define relationship: MediaFile ↔ ScreenMediaAssignment (one-to-many)
             modelBuilder.Entity<ScreenMediaAssignment>()
                 .HasOne(s => s.MediaFile)
                 .WithMany()
                 .HasForeignKey(s => s.MediaFileId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // -----------------------------------------
+            // NEW: Seed the CastingAssignment table
+            // -----------------------------------------
+
+            modelBuilder.Entity<CastingAssignment>().HasData(
+                new CastingAssignment
+                {
+                    Id = 1,                     // Always 1 row
+                    CurrentScreenId = null
+                }// No casting yet
+                    
+            );
         }
     }
 }

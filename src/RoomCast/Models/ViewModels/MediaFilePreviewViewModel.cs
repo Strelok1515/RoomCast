@@ -38,7 +38,7 @@ namespace RoomCast.Models.ViewModels
 
         public string OriginalFileName { get; init; } = string.Empty;
 
-        public DateTime CreatedAt { get; init; }
+        public DateTime? CreatedAt { get; init; }
 
         public string UploadedAtLabel { get; init; } = string.Empty;
 
